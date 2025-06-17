@@ -92,7 +92,11 @@ const Chat = () => {
 
   const sendMessageToAPI = async (userMessage: string): Promise<string> => {
     try {
-      const response = await fetch('https://automation.wtsusa.us/webhook/153ed783-a4e4-49be-8e89-16ae2d01ec1c', {
+      const apiUrl = import.meta.env.VITE_CHAT_API_URL;
+      if (!apiUrl) {
+        throw new Error('VITE_CHAT_API_URL no está configurada');
+      }
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

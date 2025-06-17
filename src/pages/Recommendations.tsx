@@ -41,7 +41,11 @@ const Recommendations = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('https://automation.wtsusa.us/webhook/2a2f2d36-9a66-4ca0-9f80-a8db6fea206b');
+      const apiUrl = import.meta.env.VITE_RECOMMENDATIONS_API_URL;
+      if (!apiUrl) {
+        throw new Error('VITE_RECOMMENDATIONS_API_URL no está configurada');
+      }
+      const response = await fetch(apiUrl);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
