@@ -5,6 +5,16 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 
 const Settings = () => {
+  // Generar fecha actual automáticamente
+  const getCurrentDate = () => {
+    const now = new Date();
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+    return `${months[now.getMonth()]} ${now.getFullYear()}`;
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
@@ -97,7 +107,7 @@ const Settings = () => {
               </div>
               <div>
                 <span className="text-muted-foreground">Última actualización:</span>
-                <span className="ml-2 text-foreground font-medium">Diciembre 2024</span>
+                <span className="ml-2 text-foreground font-medium">{getCurrentDate()}</span>
               </div>
             </div>
           </CardContent>
