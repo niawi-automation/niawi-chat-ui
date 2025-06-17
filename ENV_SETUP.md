@@ -10,7 +10,7 @@ Las URLs de webhooks ahora están protegidas mediante variables de entorno.
 ```
 VITE_RECOMMENDATIONS_API_URL=https://automation.wtsusa.us/webhook/2a2f2d36-9a66-4ca0-9f80-a8db6fea206b
 VITE_CHAT_API_URL=https://automation.wtsusa.us/webhook/153ed783-a4e4-49be-8e89-16ae2d01ec1c
-VITE_AUTH_EMAIL=user@niawi.tech
+VITE_AUTH_EMAIL=admin@niawi.tech
 VITE_AUTH_PASSWORD=d3mo.Niawi
 ```
 
@@ -25,7 +25,7 @@ VITE_AUTH_PASSWORD=d3mo.Niawi
 |------|-------|
 | `VITE_RECOMMENDATIONS_API_URL` | `https://automation.wtsusa.us/webhook/2a2f2d36-9a66-4ca0-9f80-a8db6fea206b` |
 | `VITE_CHAT_API_URL` | `https://automation.wtsusa.us/webhook/153ed783-a4e4-49be-8e89-16ae2d01ec1c` |
-| `VITE_AUTH_EMAIL` | `user@niawi.tech` |
+| `VITE_AUTH_EMAIL` | `admin@niawi.tech` |
 | `VITE_AUTH_PASSWORD` | `d3mo.Niawi` |
 
 5. Asegúrate de marcar las variables para **Production**, **Preview** y **Development**
@@ -44,7 +44,7 @@ Si las variables no están configuradas, la aplicación mostrará errores espec�
 ## 🔒 Seguridad y Autenticación
 
 ### Credenciales de Acceso Demo:
-- **Email**: `user@niawi.tech`
+- **Email**: `admin@niawi.tech`
 - **Password**: `d3mo.Niawi`
 
 ### Funcionalidades de Seguridad:

@@ -71,7 +71,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="user@niawi.tech"
+                  placeholder="admin@niawi.tech"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
