@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Send, Paperclip, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,46 +55,44 @@ const Chat = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto h-full flex flex-col">
-      {/* Welcome header */}
-      <div className="mb-6 text-center">
-        <div className="inline-flex items-center gap-2 mb-4">
-          <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center">
-            <Bot className="w-5 h-5 text-white" />
-          </div>
-          <Badge className="bg-etres-primary text-white">AI</Badge>
-        </div>
-        <h2 className="text-xl font-semibold text-foreground mb-2">
-          Visualiza rápido tus oportunidades
-        </h2>
-        <p className="text-muted-foreground">
-          E3Agent al servicio de tu gestión ejecutiva
-        </p>
-      </div>
-
+    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
       {/* Chat messages */}
-      <div className="flex-1 mb-6 space-y-4 max-h-96 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto space-y-4 mb-6">
         {messages.map((msg) => (
-          <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
-              msg.type === 'user' 
-                ? 'bg-etres-primary text-white' 
-                : 'bg-etres-surface border border-etres-border text-foreground'
-            }`}>
-              {msg.content}
+          <div
+            key={msg.id}
+            className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[70%] p-4 rounded-2xl ${
+                msg.type === 'user'
+                  ? 'bg-niawi-primary text-white'
+                  : 'bg-niawi-surface border border-niawi-border text-foreground'
+              }`}
+            >
+              {msg.type === 'assistant' && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Bot className="w-4 h-4" />
+                  <Badge className="bg-niawi-primary text-white">AI</Badge>
+                </div>
+              )}
+              <p className="text-sm leading-relaxed">{msg.content}</p>
+              <p className="text-xs opacity-70 mt-2">
+                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Suggestions */}
+      {/* Quick suggestions */}
       <div className="mb-6">
         <h3 className="text-sm font-medium text-muted-foreground mb-3">Sugerencias rápidas:</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {suggestions.map((suggestion, index) => (
             <Card 
               key={index} 
-              className="bg-etres-surface border-etres-border hover:border-etres-primary cursor-pointer transition-all duration-200 hover-lift"
+              className="bg-niawi-surface border-niawi-border hover:border-niawi-primary cursor-pointer transition-all duration-200 hover-lift"
               onClick={() => handleSuggestionClick(suggestion)}
             >
               <CardContent className="p-4">
@@ -113,7 +110,7 @@ const Chat = () => {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Escribe un mensaje..."
-            className="bg-etres-surface border-etres-border text-foreground placeholder:text-muted-foreground pr-12 h-12"
+            className="bg-niawi-surface border-niawi-border text-foreground placeholder:text-muted-foreground pr-12 h-12"
           />
           <Button
             type="button"

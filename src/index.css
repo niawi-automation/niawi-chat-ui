@@ -1,40 +1,42 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* E.tres Agent Dark Theme Design System */
+/**
+ * Copiloto Niawi Dark Theme Design System
+ * Modern, professional interface for AI-powered business intelligence
+ */
 
 @layer base {
   :root {
-    --background: 220 26% 6%;
-    --foreground: 220 10% 95%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
 
-    --card: 220 23% 11%;
-    --card-foreground: 220 10% 95%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
 
-    --popover: 220 23% 11%;
-    --popover-foreground: 220 10% 95%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
 
-    --primary: 217 91% 60%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 263 69% 69%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
 
-    --muted: 220 23% 15%;
-    --muted-foreground: 220 10% 65%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 220 23% 15%;
-    --accent-foreground: 220 10% 95%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
 
-    --border: 220 23% 18%;
-    --input: 220 23% 15%;
-    --ring: 217 91% 60%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
 
     --radius: 0.75rem;
 
@@ -47,15 +49,35 @@
     --sidebar-border: 220 23% 18%;
     --sidebar-ring: 217 91% 60%;
   }
-}
 
-@layer base {
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+  }
+
   * {
     @apply border-border;
   }
 
   body {
-    @apply bg-etres-bg text-foreground font-sans antialiased;
+    @apply bg-niawi-bg text-foreground font-sans antialiased;
     background: #0f1419;
   }
 
@@ -78,24 +100,75 @@
   }
 }
 
-@layer utilities {
+@layer components {
+  /* Modern gradient backgrounds */
   .gradient-bg {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    @apply bg-gradient-to-r from-niawi-primary to-niawi-secondary;
   }
-  
+
+  .gradient-text {
+    @apply bg-gradient-to-r from-niawi-primary to-niawi-accent bg-clip-text text-transparent;
+  }
+
+  /* Enhanced hover effects */
+  .hover-lift {
+    @apply transition-transform duration-200 hover:scale-[1.02] hover:shadow-lg;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 hover:shadow-lg hover:shadow-niawi-primary/20;
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  }
+
+  /* Custom focus states */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-niawi-primary focus:ring-offset-2 focus:ring-offset-niawi-bg;
+  }
+
+  /* Animation utilities */
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Loading states */
+  .loading-pulse {
+    @apply animate-pulse bg-gradient-to-r from-niawi-surface via-niawi-border to-niawi-surface bg-[length:200%_100%];
+    animation: loading-gradient 1.5s ease-in-out infinite;
+  }
+
+  @keyframes loading-gradient {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* Status indicators */
+  .status-online {
+    @apply bg-niawi-accent shadow-lg shadow-niawi-accent/30;
+  }
+
+  .status-warning {
+    @apply bg-niawi-warning shadow-lg shadow-niawi-warning/30;
+  }
+
+  .status-error {
+    @apply bg-niawi-danger shadow-lg shadow-niawi-danger/30;
+  }
+}
+
+@layer utilities {
   .glass-effect {
     backdrop-filter: blur(12px);
     background: rgba(26, 31, 46, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .hover-lift {
-    transition: all 0.2s ease;
-  }
-
-  .hover-lift:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
   }
 
   .text-gradient {

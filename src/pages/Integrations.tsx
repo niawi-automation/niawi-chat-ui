@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Plus, BarChart, Tag, Users, Eye, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,7 +44,7 @@ const Integrations = () => {
     },
     {
       id: 5,
-      name: 'Etres Stores API',
+      name: 'Niawi API',
       icon: Store,
       status: 'connected',
       description: 'Ventas, campañas y métricas de negocio',
@@ -56,16 +55,16 @@ const Integrations = () => {
 
   const getStatusBadge = (status: string) => {
     if (status === 'connected') {
-      return <Badge className="bg-etres-accent text-white">CONECTADO</Badge>;
+      return <Badge className="bg-niawi-accent text-white">CONECTADO</Badge>;
     }
-    return <Badge className="bg-etres-danger text-white">DESCONECTADO</Badge>;
+    return <Badge className="bg-niawi-danger text-white">DESCONECTADO</Badge>;
   };
 
   const getStatusDot = (status: string) => {
     if (status === 'connected') {
-      return <div className="w-2 h-2 bg-etres-accent rounded-full animate-pulse" />;
+      return <div className="w-2 h-2 bg-niawi-accent rounded-full animate-pulse" />;
     }
-    return <div className="w-2 h-2 bg-etres-danger rounded-full" />;
+    return <div className="w-2 h-2 bg-niawi-danger rounded-full" />;
   };
 
   return (
@@ -86,11 +85,11 @@ const Integrations = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-etres-surface border-etres-border">
+        <Card className="bg-niawi-surface border-niawi-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-etres-accent/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-etres-accent rounded-full" />
+              <div className="w-10 h-10 rounded-lg bg-niawi-accent/20 flex items-center justify-center">
+                <div className="w-6 h-6 bg-niawi-accent rounded-full" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">4</p>
@@ -100,11 +99,11 @@ const Integrations = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-etres-surface border-etres-border">
+        <Card className="bg-niawi-surface border-niawi-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-etres-danger/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-etres-danger rounded-full" />
+              <div className="w-10 h-10 rounded-lg bg-niawi-danger/20 flex items-center justify-center">
+                <div className="w-6 h-6 bg-niawi-danger rounded-full" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">1</p>
@@ -114,11 +113,11 @@ const Integrations = () => {
           </CardContent>
         </Card>
         
-        <Card className="bg-etres-surface border-etres-border">
+        <Card className="bg-niawi-surface border-niawi-border">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-etres-primary/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-etres-primary rounded-full" />
+              <div className="w-10 h-10 rounded-lg bg-niawi-primary/20 flex items-center justify-center">
+                <div className="w-6 h-6 bg-niawi-primary rounded-full" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-foreground">5</p>
@@ -130,15 +129,15 @@ const Integrations = () => {
       </div>
 
       {/* Integrations Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {integrations.map((integration) => {
           const Icon = integration.icon;
           return (
-            <Card key={integration.id} className="bg-etres-surface border-etres-border hover-lift">
+            <Card key={integration.id} className="bg-niawi-surface border-niawi-border hover-lift">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-etres-border/50 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-xl bg-niawi-border/50 flex items-center justify-center">
                       <Icon className="w-6 h-6 text-foreground" />
                     </div>
                     <div>
@@ -151,7 +150,7 @@ const Integrations = () => {
                   </div>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <CardDescription className="text-muted-foreground">
                   {integration.description}
@@ -168,7 +167,7 @@ const Integrations = () => {
                   variant={integration.status === 'connected' ? 'outline' : 'default'}
                   className={`w-full ${
                     integration.status === 'connected' 
-                      ? 'border-etres-border hover:bg-etres-surface' 
+                      ? 'border-niawi-border hover:bg-niawi-surface' 
                       : 'gradient-bg hover:opacity-90 text-white'
                   }`}
                 >

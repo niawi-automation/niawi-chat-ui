@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -63,16 +62,26 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
-				// E.tres Agent custom colors
-				etres: {
-					bg: '#0f1419',
-					surface: '#1a1f2e',
-					primary: '#3b82f6',
-					secondary: '#8b5cf6',
-					accent: '#10b981',
-					warning: '#f59e0b',
-					danger: '#ef4444',
-					border: '#2d3748'
+				// Copiloto Niawi custom colors
+				niawi: {
+					// Background and surfaces
+					bg: '#0A0B0D',
+					surface: '#161A1F',
+					border: '#252A31',
+					
+					// Brand colors
+					primary: '#2563EB', // Modern blue
+					secondary: '#06B6D4', // Cyan accent
+					accent: '#10B981', // Green success
+					warning: '#F59E0B', // Amber warning
+					danger: '#EF4444', // Red danger
+					
+					// Text variants
+					text: {
+						primary: '#F8FAFC',
+						secondary: '#CBD5E1',
+						muted: '#64748B',
+					}
 				}
 			},
 			borderRadius: {
