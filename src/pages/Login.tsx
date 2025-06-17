@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import NiawiLogo from '@/components/NiawiLogo';
+import NiawiLogoSvg from '@/assets/images/Niawilogo.svg';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -39,13 +39,19 @@ const Login = () => {
     <div className="min-h-screen bg-niawi-bg flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <Card className="bg-niawi-surface border-niawi-border shadow-2xl hover-lift">
-          <CardHeader className="space-y-4 text-center">
-            <div className="flex justify-center">
-              <NiawiLogo size="lg" showText={false} />
+          <CardHeader className="space-y-3 text-center pb-4">
+            <div className="flex justify-center mb-2">
+              <div className="w-20 h-20 flex items-center justify-center">
+                <img 
+                  src={NiawiLogoSvg} 
+                  alt="Niawi Logo" 
+                  className="w-full h-full object-contain"
+                />
+              </div>
             </div>
             <div>
-              <CardTitle className="text-2xl font-bold text-foreground">Copiloto Niawi</CardTitle>
-              <CardDescription className="text-muted-foreground mt-2">
+              <CardTitle className="text-xl font-bold text-foreground mb-2">Copiloto NiawiTech</CardTitle>
+              <CardDescription className="text-muted-foreground text-sm">
                 Ingresa tus credenciales para acceder al panel de control
               </CardDescription>
             </div>
