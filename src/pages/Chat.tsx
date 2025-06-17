@@ -32,11 +32,12 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const suggestions = [
-    "¿Dónde se pierde más tiempo operativo?",
-    "¿Hay desviaciones críticas en curso?",
-    "¿Qué contribución hicieron los artículos estrella?",
-    "¿Cómo evoluciona el funnel de conversión?",
-    "¿Revisamos juntos la agenda ejecutiva?"
+    "¿Qué programas tienen mayor volumen de producción este mes?",
+    "¿Hay retrasos en las fechas prometidas al cliente esta semana?",
+    "¿Cuántas órdenes están en costura actualmente?",
+    "¿Qué categorías de prenda concentran más unidades en producción?",
+    "¿Qué destinos concentran más volumen de exportación este mes?",
+    "¿Qué líneas de producción han tenido más carga recientemente?"
   ];
 
   // Determinar si estamos en una conversación activa
