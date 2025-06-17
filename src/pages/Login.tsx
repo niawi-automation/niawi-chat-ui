@@ -18,18 +18,25 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Show loading state with updated branding
-    const loadingToast = {
-      id: Date.now(),
-      title: "Iniciando sesión...",
-      description: "Accediendo a Copiloto Niawi...",
-      type: "loading" as const
-    };
+    // Obtener credenciales desde variables de entorno
+    const validEmail = import.meta.env.VITE_AUTH_EMAIL;
+    const validPassword = import.meta.env.VITE_AUTH_PASSWORD;
+
+    // Validar credenciales
+    const isValidCredentials = (
+      email === validEmail && 
+      password === validPassword
+    );
 
     // Simulate API call
     setTimeout(() => {
-      if (email && password) {
+      if (isValidCredentials) {
+        // Almacenar estado de autenticación
+        localStorage.setItem('niawi-auth', 'authenticated');
         navigate('/dashboard');
+      } else {
+        // Mostrar error de credenciales inválidas
+        alert('Credenciales incorrectas. Acceso denegado.');
       }
       setIsLoading(false);
     }, 1500);
@@ -64,7 +71,7 @@ const Login = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="admin@niawi.tech"
+                  placeholder="user@niawi.tech"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

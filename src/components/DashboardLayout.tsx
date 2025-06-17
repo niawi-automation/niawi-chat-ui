@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { TrendingUp, Bot, Zap, Settings, Menu, LogOut, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import NiawiLogo from './NiawiLogo';
+import { useAuth } from '@/hooks/useAuth';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, logout, requireAuth } = useAuth();
+
+  // Proteger rutas - verificar autenticación
+  useEffect(() => {
+    requireAuth();
+  }, [requireAuth]);
 
   const menuItems = [
     {
@@ -47,8 +54,25 @@ const DashboardLayout = () => {
   ];
 
   const handleLogout = () => {
-    navigate('/login');
+    logout();
   };
+
+  // Mostrar loading mientras se verifica autenticación
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-niawi-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-niawi-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Verificando autenticación...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si no está autenticado, no renderizar nada (useAuth ya redirige)
+  if (!isAuthenticated) {
+    return null;
+  }
 
   const isActive = (path: string) => {
     if (path === '/dashboard/chat' && location.pathname === '/dashboard') return true;
