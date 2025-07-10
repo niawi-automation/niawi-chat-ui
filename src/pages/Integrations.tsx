@@ -1,5 +1,5 @@
 import React from 'react';
-import { Plus, BarChart, Tag, Users, Eye, Store } from 'lucide-react';
+import { Plus, BarChart, Tag, Users, Eye, Store, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -68,115 +68,117 @@ const Integrations = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground mb-2">Integraciones activas</h2>
-          <p className="text-muted-foreground">
-            Gestiona las conexiones con tus herramientas empresariales
-          </p>
+    <div className="page-container">
+      <div className="page-content">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Integraciones</h1>
+            <p className="text-muted-foreground">
+              Conecta Copiloto Niawi con tu ecosistema empresarial
+            </p>
+          </div>
+          <Button className="bg-niawi-primary hover:bg-niawi-primary/90">
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Integración
+          </Button>
         </div>
-        <Button className="gradient-bg hover:opacity-90 text-white">
-          <Plus className="w-4 h-4 mr-2" />
-          Añadir integración
-        </Button>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="bg-niawi-surface border-niawi-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-niawi-accent/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-niawi-accent rounded-full" />
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <Card className="bg-niawi-surface border-niawi-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-niawi-accent/20 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-niawi-accent rounded-full" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">4</p>
+                  <p className="text-sm text-muted-foreground">Conectadas</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">4</p>
-                <p className="text-sm text-muted-foreground">Conectadas</p>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-niawi-surface border-niawi-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-niawi-danger/20 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-niawi-danger rounded-full" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">1</p>
+                  <p className="text-sm text-muted-foreground">Pendientes</p>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-niawi-surface border-niawi-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-niawi-danger/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-niawi-danger rounded-full" />
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-niawi-surface border-niawi-border">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-niawi-primary/20 flex items-center justify-center">
+                  <div className="w-6 h-6 bg-niawi-primary rounded-full" />
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-foreground">5</p>
+                  <p className="text-sm text-muted-foreground">Total</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">1</p>
-                <p className="text-sm text-muted-foreground">Pendientes</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-niawi-surface border-niawi-border">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-niawi-primary/20 flex items-center justify-center">
-                <div className="w-6 h-6 bg-niawi-primary rounded-full" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">5</p>
-                <p className="text-sm text-muted-foreground">Total</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Integrations Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {integrations.map((integration) => {
-          const Icon = integration.icon;
-          return (
-            <Card key={integration.id} className="bg-niawi-surface border-niawi-border hover-lift">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-niawi-border/50 flex items-center justify-center">
-                      <Icon className="w-6 h-6 text-foreground" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-lg text-foreground">{integration.name}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        {getStatusDot(integration.status)}
-                        {getStatusBadge(integration.status)}
+        {/* Integrations Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {integrations.map((integration) => {
+            const Icon = integration.icon;
+            return (
+              <Card key={integration.id} className="bg-niawi-surface border-niawi-border hover-lift">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-xl bg-niawi-border/50 flex items-center justify-center">
+                        <Icon className="w-6 h-6 text-foreground" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-foreground">{integration.name}</CardTitle>
+                        <div className="flex items-center gap-2 mt-1">
+                          {getStatusDot(integration.status)}
+                          {getStatusBadge(integration.status)}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <CardDescription className="text-muted-foreground">
-                  {integration.description}
-                </CardDescription>
+                </CardHeader>
                 
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Última sincronización</p>
-                    <p className="text-sm font-medium text-foreground">{integration.lastSync}</p>
+                <CardContent className="space-y-4">
+                  <CardDescription className="text-muted-foreground">
+                    {integration.description}
+                  </CardDescription>
+                  
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Última sincronización</p>
+                      <p className="text-sm font-medium text-foreground">{integration.lastSync}</p>
+                    </div>
                   </div>
-                </div>
-                
-                <Button 
-                  variant={integration.status === 'connected' ? 'outline' : 'default'}
-                  className={`w-full ${
-                    integration.status === 'connected' 
-                      ? 'border-niawi-border hover:bg-niawi-surface' 
-                      : 'gradient-bg hover:opacity-90 text-white'
-                  }`}
-                >
-                  {integration.actionLabel}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
+
+                  <Button 
+                    variant={integration.status === 'connected' ? 'outline' : 'default'}
+                    className={`w-full ${
+                      integration.status === 'connected' 
+                        ? 'border-niawi-border hover:bg-niawi-surface' 
+                        : 'bg-niawi-primary hover:bg-niawi-primary/90 text-white'
+                    }`}
+                  >
+                    {integration.actionLabel}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
       </div>
     </div>
   );

@@ -1,44 +1,53 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Bot, AlertCircle, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Paperclip, Bot, AlertCircle, RotateCcw, Zap, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-
-interface Message {
-  id: number;
-  type: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-  isLoading?: boolean;
-  hasError?: boolean;
-}
-
-interface ApiResponse {
-  output: string;
-}
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import AgentSelector from '@/components/AgentSelector';
+import { useAgent } from '@/hooks/useAgent';
+import type { Message, ApiResponse } from '@/types/agents';
+import { AGENT_SUGGESTIONS } from '@/constants/agents';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      type: 'assistant',
-      content: 'Buen día. ¿Qué objetivos atacamos primero?, admin! 👋',
-      timestamp: new Date()
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const { selectedAgent, getAgentEndpoint, currentUser } = useAgent();
 
-  const suggestions = [
-    "¿Qué programas tienen mayor volumen de producción este mes?",
-    "¿Hay retrasos en las fechas prometidas al cliente esta semana?",
-    "¿Cuántas órdenes están en costura actualmente?",
-    "¿Qué categorías de prenda concentran más unidades en producción?",
-    "¿Qué destinos concentran más volumen de exportación este mes?",
-    "¿Qué líneas de producción han tenido más carga recientemente?"
-  ];
+  // Validación de selectedAgent
+  if (!selectedAgent) {
+    return (
+      <div className="max-w-4xl mx-auto h-[calc(100vh-120px)] flex items-center justify-center">
+        <Card className="bg-niawi-surface border-niawi-border p-6">
+          <p className="text-center text-muted-foreground">Cargando agente...</p>
+        </Card>
+      </div>
+    );
+  }
+
+  // Sugerencias dinámicas según el agente seleccionado - optimizado con useCallback
+  const getAgentSuggestions = useCallback((agentId: string): readonly string[] => {
+    return AGENT_SUGGESTIONS[agentId] || AGENT_SUGGESTIONS.operations;
+  }, []);
+
+  // Inicializar conversación cuando cambia el agente
+  useEffect(() => {
+    if (!selectedAgent) return;
+    
+    const welcomeMessage: Message = {
+      id: Date.now(),
+      type: 'assistant',
+      content: `¡Hola${currentUser ? `, ${currentUser.name}` : ''}! Soy tu ${selectedAgent.name}. Estoy especializado en ${selectedAgent.description.toLowerCase()}. ¿En qué puedo ayudarte hoy?`,
+      timestamp: new Date(),
+      agentId: selectedAgent.id
+    };
+    
+    setMessages([welcomeMessage]);
+  }, [selectedAgent?.id, currentUser?.name, selectedAgent?.name, selectedAgent?.description]);
 
   // Determinar si estamos en una conversación activa
   const isActiveConversation = messages.length > 1;
@@ -54,13 +63,11 @@ const Chat = () => {
 
   // Función para formatear el contenido del mensaje
   const formatMessageContent = (content: string) => {
-    // Dividir por saltos de línea dobles para párrafos
     const paragraphs = content.split('\n\n');
     
     return paragraphs.map((paragraph, index) => {
       if (!paragraph.trim()) return null;
       
-      // Dividir cada párrafo por saltos de línea simples
       const lines = paragraph.split('\n');
       
       return (
@@ -68,7 +75,6 @@ const Chat = () => {
           {lines.map((line, lineIndex) => {
             if (!line.trim()) return null;
             
-            // Detectar si es una línea de lista (empieza con -, *, •, o número)
             const isListItem = /^[\s]*[-\*•]/.test(line) || /^[\s]*\d+\./.test(line);
             
             return (
@@ -92,18 +98,28 @@ const Chat = () => {
   };
 
   const sendMessageToAPI = async (userMessage: string): Promise<string> => {
+    if (!selectedAgent) {
+      throw new Error('No hay agente seleccionado');
+    }
+
     try {
-      const apiUrl = import.meta.env.VITE_CHAT_API_URL;
+      // Usar el endpoint dinámico del agente seleccionado
+      const apiUrl = getAgentEndpoint(selectedAgent.id);
+      
       if (!apiUrl) {
-        throw new Error('VITE_CHAT_API_URL no está configurada');
+        throw new Error('Endpoint del agente no configurado');
       }
+      
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mensaje: userMessage
+          mensaje: userMessage,
+          agente: selectedAgent.id,
+          contexto: selectedAgent.department,
+          usuario: currentUser?.id
         })
       });
 
@@ -111,28 +127,38 @@ const Chat = () => {
         throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
 
-      const data: ApiResponse[] = await response.json();
+      const responseData = await response.json();
       
-      if (data && data.length > 0 && data[0].output) {
-        return data[0].output;
+      // Manejar tanto formato de array como objeto directo
+      let data: ApiResponse;
+      if (Array.isArray(responseData)) {
+        // Si es un array, tomar el primer elemento
+        data = responseData[0];
       } else {
+        // Si es un objeto directo
+        data = responseData;
+      }
+      
+      if (data && data.output) {
+        return data.output;
+      } else {
+        console.error('Formato de respuesta recibido:', responseData);
         throw new Error('Formato de respuesta inválido');
       }
     } catch (error) {
-      console.error('Error al comunicarse con el asistente:', error);
+      console.error('Error al comunicarse con el agente:', error);
       throw error;
     }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || !selectedAgent) return;
 
     const userMessage = message.trim();
     setMessage('');
     setIsLoading(true);
 
-    // Agregar mensaje del usuario
     const userMessageObj: Message = {
       id: Date.now(),
       type: 'user',
@@ -140,22 +166,20 @@ const Chat = () => {
       timestamp: new Date()
     };
 
-    // Agregar mensaje de carga del asistente
     const loadingMessageObj: Message = {
       id: Date.now() + 1,
       type: 'assistant',
-      content: 'Analizando tu consulta...',
+      content: `${selectedAgent.name} está analizando tu consulta...`,
       timestamp: new Date(),
-      isLoading: true
+      isLoading: true,
+      agentId: selectedAgent.id
     };
 
     setMessages(prev => [...prev, userMessageObj, loadingMessageObj]);
 
     try {
-      // Enviar mensaje a la API y obtener respuesta
       const aiResponse = await sendMessageToAPI(userMessage);
-
-      // Reemplazar el mensaje de carga con la respuesta real
+      
       setMessages(prev => prev.map(msg => 
         msg.id === loadingMessageObj.id 
           ? {
@@ -167,7 +191,6 @@ const Chat = () => {
       ));
 
     } catch (error) {
-      // Mostrar mensaje de error
       const errorMessage = error instanceof Error 
         ? error.message 
         : 'Error desconocido al procesar tu mensaje';
@@ -194,181 +217,180 @@ const Chat = () => {
   };
 
   const handleNewConversation = () => {
-    setMessages([
-      {
-        id: 1,
-        type: 'assistant',
-        content: 'Buen día. ¿Qué objetivos atacamos primero?, admin! 👋',
-        timestamp: new Date()
-      }
-    ]);
-    setMessage('');
+    if (!selectedAgent) return;
+    
+    const welcomeMessage: Message = {
+      id: Date.now(),
+      type: 'assistant',
+      content: `¡Hola${currentUser ? `, ${currentUser.name}` : ''}! Soy tu ${selectedAgent.name}. ¿En qué puedo ayudarte hoy?`,
+      timestamp: new Date(),
+      agentId: selectedAgent.id
+    };
+    
+    setMessages([welcomeMessage]);
   };
 
-  return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] max-w-4xl mx-auto">
-      {/* Header con botón de nueva conversación cuando hay conversación activa */}
-      {isActiveConversation && (
-        <div className="flex items-center justify-between mb-4 p-4 bg-niawi-surface border border-niawi-border rounded-lg">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-niawi-primary/20 flex items-center justify-center">
-              <Bot className="w-4 h-4 text-niawi-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm font-medium text-foreground">Conversación activa</h3>
-              <p className="text-xs text-muted-foreground">
-                {messages.length - 1} mensaje{messages.length - 1 !== 1 ? 's' : ''} intercambiado{messages.length - 1 !== 1 ? 's' : ''}
-              </p>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleNewConversation}
-            className="border-niawi-border hover:bg-niawi-border/50"
-          >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Nueva conversación
-          </Button>
-        </div>
-      )}
+  const suggestions = selectedAgent ? getAgentSuggestions(selectedAgent.id) : [];
 
-      {/* Chat messages */}
-      <div className={`flex-1 overflow-y-auto space-y-4 ${isActiveConversation ? 'mb-4' : 'mb-6'}`}>
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[75%] p-4 rounded-2xl ${
-                msg.type === 'user'
-                  ? 'bg-niawi-primary text-white'
-                  : msg.hasError
-                  ? 'bg-red-500/10 border border-red-500/20 text-foreground'
-                  : 'bg-niawi-surface border border-niawi-border text-foreground'
-              }`}
-            >
-              {msg.type === 'assistant' && (
-                <div className="flex items-center gap-2 mb-3">
-                  <Bot className="w-4 h-4" />
-                  <Badge className={`${msg.hasError ? 'bg-red-500' : 'bg-niawi-primary'} text-white`}>
-                    {msg.hasError ? 'ERROR' : 'AI'}
+  return (
+    <div className="page-container">
+      {/* Header con selector de agente */}
+      <div className="flex-shrink-0 p-6 pb-0">
+        <AgentSelector />
+      </div>
+
+      {/* Chat Container */}
+      <div className="flex-1 p-6 pt-6 overflow-hidden">
+        <Card className="h-full bg-niawi-surface border-niawi-border flex flex-col overflow-hidden">
+          <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-track-niawi-surface scrollbar-thumb-niawi-border">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex gap-4 ${
+                    msg.type === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
+                >
+                  {msg.type === 'assistant' && selectedAgent && (
+                    <Avatar className={`w-8 h-8 ${selectedAgent.bgColor} flex-shrink-0`}>
+                      <AvatarFallback className={`${selectedAgent.color} ${selectedAgent.bgColor} border-0`}>
+                        {msg.isLoading ? (
+                          <Brain className="w-4 h-4 animate-pulse" />
+                        ) : (
+                          <selectedAgent.icon className="w-4 h-4" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+                  
+                  <div
+                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                      msg.type === 'user'
+                        ? 'bg-niawi-primary text-white ml-auto'
+                        : `bg-niawi-border/30 text-foreground ${
+                            msg.hasError ? 'border border-niawi-danger/50' : ''
+                          }`
+                    }`}
+                  >
+                    {msg.hasError && (
+                      <div className="flex items-center gap-2 mb-2 text-niawi-danger">
+                        <AlertCircle className="w-4 h-4" />
+                        <span className="text-xs font-medium">Error</span>
+                      </div>
+                    )}
+                    
+                    <div className="text-sm leading-relaxed">
+                      {formatMessageContent(msg.content)}
+                    </div>
+                    
+                    <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
+                      <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      {msg.agentId && selectedAgent && (
+                        <>
+                          <span>•</span>
+                          <span>{selectedAgent.department}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Botón Nueva Conversación - Solo si hay conversación activa */}
+            {isActiveConversation && (
+              <div className="px-6 pb-2 flex-shrink-0">
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNewConversation}
+                    className="border-niawi-border hover:bg-niawi-border/50"
+                    disabled={isLoading}
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Nueva conversación
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Suggestions - Solo si no hay conversación activa */}
+            {!isActiveConversation && selectedAgent && (
+              <div className="px-6 pb-4 flex-shrink-0">
+                <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Zap className="w-4 h-4 text-niawi-accent" />
+                  <span>Sugerencias para {selectedAgent.department}</span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {suggestions.map((suggestion, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="text-left h-auto p-3 border-niawi-border bg-niawi-border/20 hover:bg-niawi-border/40 text-sm justify-start"
+                      disabled={isLoading}
+                    >
+                      <Zap className="w-4 h-4 mr-2 text-niawi-accent flex-shrink-0" />
+                      <span className="truncate">{suggestion}</span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input Area */}
+            <div className="border-t border-niawi-border p-4 flex-shrink-0">
+              {selectedAgent && (
+                <div className="flex items-center gap-2 mb-2">
+                  <Badge className={`${selectedAgent.bgColor} ${selectedAgent.color} border-0 text-xs`}>
+                    {selectedAgent.department}
                   </Badge>
-                  {msg.hasError && <AlertCircle className="w-4 h-4 text-red-500" />}
+                  <span className="text-xs text-muted-foreground">
+                    Conectado a {selectedAgent.name}
+                  </span>
                 </div>
               )}
               
-              <div className="flex items-start gap-2">
-                {msg.isLoading && (
-                  <div className="flex items-center gap-1 mt-1">
-                    <div className="w-2 h-2 bg-niawi-primary rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-niawi-primary rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-niawi-primary rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                  </div>
-                )}
-                <div className="flex-1">
-                  {msg.isLoading ? (
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
-                  ) : (
-                    <div className="space-y-1">
-                      {formatMessageContent(msg.content)}
-                    </div>
-                  )}
+              <form onSubmit={handleSendMessage} className="flex gap-2">
+                <div className="flex-1 relative">
+                  <Input
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder={selectedAgent ? `Pregunta a tu ${selectedAgent.name}...` : 'Selecciona un agente primero...'}
+                    className="pr-12 bg-niawi-bg border-niawi-border focus:border-niawi-primary"
+                    disabled={isLoading || !selectedAgent}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    className="absolute right-1 top-1 w-8 h-8 text-muted-foreground hover:text-foreground"
+                    disabled={isLoading}
+                  >
+                    <Paperclip className="w-4 h-4" />
+                  </Button>
                 </div>
-              </div>
-              
-              <p className="text-xs opacity-70 mt-3 pt-2 border-t border-current/10">
-                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </p>
+                
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={!message.trim() || isLoading || !selectedAgent}
+                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white"
+                >
+                  {isLoading ? (
+                    <Brain className="w-4 h-4 animate-pulse" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                </Button>
+              </form>
             </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Quick suggestions - Solo mostrar si NO hay conversación activa */}
-      {!isActiveConversation && (
-        <div className="mb-6">
-          <div className="text-center mb-4">
-            <div className="inline-flex items-center gap-2 mb-3">
-              <div className="w-10 h-10 rounded-full gradient-bg flex items-center justify-center">
-                <Bot className="w-5 h-5 text-white" />
-              </div>
-              <Badge className="bg-niawi-primary text-white">AI</Badge>
-            </div>
-            <h2 className="text-lg font-semibold text-foreground mb-2">
-              Visualiza rápido tus oportunidades
-            </h2>
-            <p className="text-muted-foreground text-sm">
-              Copiloto Niawi al servicio de tu gestión ejecutiva
-            </p>
-          </div>
-          
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">Sugerencias para comenzar:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {suggestions.map((suggestion, index) => (
-              <Card 
-                key={index} 
-                className={`bg-niawi-surface border-niawi-border hover:border-niawi-primary cursor-pointer transition-all duration-200 hover-lift ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-                onClick={() => handleSuggestionClick(suggestion)}
-              >
-                <CardContent className="p-4">
-                  <p className="text-sm text-foreground">{suggestion}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Message input */}
-      <div className="space-y-3">
-        <form onSubmit={handleSendMessage} className="flex gap-2">
-          <div className="flex-1 relative">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder={isLoading ? "Procesando mensaje..." : "Escribe un mensaje..."}
-              disabled={isLoading}
-              className={`bg-niawi-surface border-niawi-border text-foreground placeholder:text-muted-foreground pr-12 h-12 ${
-                isLoading ? 'opacity-50' : ''
-              }`}
-            />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              disabled={isLoading}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <Paperclip className="w-4 h-4" />
-            </Button>
-          </div>
-          <Button 
-            type="submit" 
-            className="gradient-bg hover:opacity-90 text-white h-12 px-6"
-            disabled={!message.trim() || isLoading}
-          >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
-          </Button>
-        </form>
-
-        {/* Connection status indicator */}
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-            <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-yellow-500 animate-pulse' : 'bg-niawi-accent'}`}></div>
-            <span>
-              {isLoading ? 'Conectando con Copiloto Niawi...' : 'Copiloto Niawi listo'}
-            </span>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
