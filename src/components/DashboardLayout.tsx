@@ -16,6 +16,32 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, logout, requireAuth } = useAuth();
   const { currentUser } = useAgent();
+  
+  // Agregar función temporal para limpiar caché y recargar webhooks (solo desarrollo)
+  const handleClearCache = () => {
+    if (import.meta.env.DEV) {
+      const confirmed = window.confirm(
+        '¿Estás seguro de que quieres limpiar todos los datos?\n\n' +
+        'Esto eliminará:\n' +
+        '- Configuración de agentes\n' +
+        '- Conversaciones guardadas\n' +
+        '- Datos de usuarios\n' +
+        '- Logs de actividad'
+      );
+      
+      if (confirmed) {
+        // Limpiar todos los datos de localStorage relacionados con la app
+        localStorage.removeItem('niawi-agents-config');
+        localStorage.removeItem('niawi-agent-conversations');
+        localStorage.removeItem('niawi-users');
+        localStorage.removeItem('niawi-company');
+        localStorage.removeItem('niawi-activity-logs');
+        
+        console.log('🧹 Cache limpiado completamente');
+        window.location.reload();
+      }
+    }
+  };
 
   // Proteger rutas - verificar autenticación
   useEffect(() => {
@@ -270,6 +296,20 @@ const DashboardLayout = () => {
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
+      )}
+
+      {/* Botón temporal de desarrollo para limpiar caché */}
+      {import.meta.env.DEV && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <Button
+            onClick={handleClearCache}
+            variant="outline"
+            size="sm"
+            className="bg-red-500 hover:bg-red-600 text-white border-red-500"
+          >
+            🧹 Limpiar Caché
+          </Button>
+        </div>
       )}
 
       {/* 

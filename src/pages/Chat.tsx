@@ -10,6 +10,12 @@ import { useAgent } from '@/hooks/useAgent';
 import type { Message, ApiResponse } from '@/types/agents';
 import { AGENT_SUGGESTIONS } from '@/constants/agents';
 
+const CONVERSATIONS_STORAGE_KEY = 'niawi-agent-conversations';
+
+interface AgentConversations {
+  [agentId: string]: Message[];
+}
+
 const Chat = () => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -17,6 +23,61 @@ const Chat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const { selectedAgent, getAgentEndpoint, currentUser } = useAgent();
+
+  // Función para cargar conversaciones desde localStorage
+  const loadConversations = useCallback((): AgentConversations => {
+    try {
+      const stored = localStorage.getItem(CONVERSATIONS_STORAGE_KEY);
+      if (!stored) return {};
+      
+      const conversations = JSON.parse(stored);
+      
+      // Validar y limpiar datos corrupto
+      const cleanConversations: AgentConversations = {};
+      Object.keys(conversations).forEach(agentId => {
+        const messages = conversations[agentId];
+        if (Array.isArray(messages)) {
+          cleanConversations[agentId] = messages.filter(msg => 
+            msg && typeof msg === 'object' && msg.timestamp
+          );
+        }
+      });
+      
+      return cleanConversations;
+    } catch (error) {
+      console.error('Error loading conversations, clearing corrupted data:', error);
+      localStorage.removeItem(CONVERSATIONS_STORAGE_KEY);
+      return {};
+    }
+  }, []);
+
+  // Función para guardar conversaciones en localStorage
+  const saveConversations = useCallback((conversations: AgentConversations) => {
+    try {
+      localStorage.setItem(CONVERSATIONS_STORAGE_KEY, JSON.stringify(conversations));
+    } catch (error) {
+      console.error('Error saving conversations:', error);
+    }
+  }, []);
+
+  // Función para guardar la conversación actual del agente
+  const saveCurrentConversation = useCallback((agentId: string, messages: Message[]) => {
+    const conversations = loadConversations();
+    conversations[agentId] = messages;
+    saveConversations(conversations);
+  }, [loadConversations, saveConversations]);
+
+  // Función para cargar la conversación de un agente específico
+  const loadAgentConversation = useCallback((agentId: string): Message[] => {
+    const conversations = loadConversations();
+    const messages = conversations[agentId] || [];
+    
+    // Convertir timestamps de string a Date cuando se cargan desde localStorage
+    return messages.map(msg => ({
+      ...msg,
+      timestamp: typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp
+    }));
+  }, [loadConversations]);
 
   // Validación de selectedAgent
   if (!selectedAgent) {
@@ -38,16 +99,32 @@ const Chat = () => {
   useEffect(() => {
     if (!selectedAgent) return;
     
-    const welcomeMessage: Message = {
-      id: Date.now(),
-      type: 'assistant',
-      content: `¡Hola${currentUser ? `, ${currentUser.name}` : ''}! Soy tu ${selectedAgent.name}. Estoy especializado en ${selectedAgent.description.toLowerCase()}. ¿En qué puedo ayudarte hoy?`,
-      timestamp: new Date(),
-      agentId: selectedAgent.id
-    };
+    // Cargar conversación existente para este agente
+    const existingConversation = loadAgentConversation(selectedAgent.id);
     
-    setMessages([welcomeMessage]);
-  }, [selectedAgent?.id, currentUser?.name, selectedAgent?.name, selectedAgent?.description]);
+    if (existingConversation.length > 0) {
+      // Si hay conversación existente, cargarla
+      setMessages(existingConversation);
+    } else {
+      // Si no hay conversación, crear mensaje de bienvenida
+      const welcomeMessage: Message = {
+        id: Date.now(),
+        type: 'assistant',
+        content: `¡Hola${currentUser ? `, ${currentUser.name}` : ''}! Soy tu ${selectedAgent.name}. Estoy especializado en ${selectedAgent.description.toLowerCase()}. ¿En qué puedo ayudarte hoy?`,
+        timestamp: new Date(),
+        agentId: selectedAgent.id
+      };
+      
+      setMessages([welcomeMessage]);
+    }
+  }, [selectedAgent?.id, currentUser?.name, selectedAgent?.name, selectedAgent?.description, loadAgentConversation]);
+
+  // Guardar conversación automáticamente cuando cambien los mensajes
+  useEffect(() => {
+    if (selectedAgent && messages.length > 0) {
+      saveCurrentConversation(selectedAgent.id, messages);
+    }
+  }, [messages, selectedAgent?.id, saveCurrentConversation]);
 
   // Determinar si estamos en una conversación activa
   const isActiveConversation = messages.length > 1;
@@ -228,6 +305,9 @@ const Chat = () => {
     };
     
     setMessages([welcomeMessage]);
+    
+    // Guardar la nueva conversación (sobrescribir la anterior)
+    saveCurrentConversation(selectedAgent.id, [welcomeMessage]);
   };
 
   const suggestions = selectedAgent ? getAgentSuggestions(selectedAgent.id) : [];
@@ -285,7 +365,12 @@ const Chat = () => {
                     </div>
                     
                     <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
-                      <span>{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span>
+                        {msg.timestamp instanceof Date 
+                          ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                          : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                        }
+                      </span>
                       {msg.agentId && selectedAgent && (
                         <>
                           <span>•</span>

@@ -24,7 +24,7 @@ export const AGENTS: Agent[] = [
     bgColor: 'bg-green-500/10',
     endpoint: '/hr',
     capabilities: ['Gestión Personal', 'Nóminas', 'Políticas', 'Evaluaciones'],
-    status: 'active'
+    status: 'maintenance'
   },
   {
     id: 'sales',
@@ -36,7 +36,7 @@ export const AGENTS: Agent[] = [
     bgColor: 'bg-purple-500/10',
     endpoint: '/sales',
     capabilities: ['CRM', 'Forecasting', 'Análisis Cliente', 'Oportunidades'],
-    status: 'active'
+    status: 'maintenance'
   },
   {
     id: 'documents',
@@ -48,7 +48,7 @@ export const AGENTS: Agent[] = [
     bgColor: 'bg-orange-500/10',
     endpoint: '/documents',
     capabilities: ['Validación', 'OCR', 'Compliance', 'Clasificación'],
-    status: 'new'
+    status: 'active'
   }
 ] as const;
 

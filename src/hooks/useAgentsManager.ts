@@ -41,23 +41,49 @@ export const useAgentsManager = () => {
       }
       
       // Si no hay configuración guardada, usar valores por defecto con métricas mock
-      return DEFAULT_AGENTS.map(agent => ({
-        ...agent,
-        users: Math.floor(Math.random() * 50) + 10,
-        conversations: Math.floor(Math.random() * 300) + 50,
-        usage: Math.floor(Math.random() * 40) + 50,
-        accuracy: Math.floor(Math.random() * 15) + 85,
-        isEnabled: agent.status === 'active',
-        webhookUrl: `https://api.niawi.tech${agent.endpoint}`,
-        lastActivity: new Date().toISOString()
-      }));
+      return DEFAULT_AGENTS.map(agent => {
+        // Configurar webhooks específicos para los agentes prioritarios
+        let webhookUrl = `https://api.niawi.tech${agent.endpoint}`;
+        
+        if (agent.id === 'operations') {
+          // Agente PCP - URL específica proporcionada
+          webhookUrl = 'https://automation.wtsusa.us/webhook/153ed783-a4e4-49be-8e89-16ae2d01ec1c';
+        } else if (agent.id === 'documents') {
+          // Agente WTS - URL específica proporcionada
+          webhookUrl = 'https://automation.wtsusa.us/webhook/067c480e-c554-4e28-a4e1-4212e4b7c8f2';
+        }
+        
+        return {
+          ...agent,
+          users: Math.floor(Math.random() * 50) + 10,
+          conversations: Math.floor(Math.random() * 300) + 50,
+          usage: Math.floor(Math.random() * 40) + 50,
+          accuracy: Math.floor(Math.random() * 15) + 85,
+          // Solo PCP (operations) y WTS (documents) activos por defecto
+          isEnabled: agent.id === 'operations' || agent.id === 'documents',
+          webhookUrl,
+          lastActivity: new Date().toISOString()
+        };
+      });
     } catch (error) {
       console.error('Error loading agents config:', error);
-      return DEFAULT_AGENTS.map(agent => ({
-        ...agent,
-        isEnabled: true,
-        webhookUrl: `https://api.niawi.tech${agent.endpoint}`
-      }));
+      return DEFAULT_AGENTS.map(agent => {
+        // Configurar webhooks específicos también en caso de error
+        let webhookUrl = `https://api.niawi.tech${agent.endpoint}`;
+        
+        if (agent.id === 'operations') {
+          webhookUrl = 'https://automation.wtsusa.us/webhook/153ed783-a4e4-49be-8e89-16ae2d01ec1c';
+        } else if (agent.id === 'documents') {
+          webhookUrl = 'https://automation.wtsusa.us/webhook/067c480e-c554-4e28-a4e1-4212e4b7c8f2';
+        }
+        
+        return {
+          ...agent,
+          // Solo PCP (operations) y WTS (documents) activos por defecto
+          isEnabled: agent.id === 'operations' || agent.id === 'documents',
+          webhookUrl
+        };
+      });
     }
   }, []);
 

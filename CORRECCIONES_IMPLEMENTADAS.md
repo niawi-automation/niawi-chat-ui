@@ -2,6 +2,44 @@
 
 ## 🚨 **ERRORES CRÍTICOS CORREGIDOS**
 
+### **6. ERROR CRÍTICO - Timestamps en localStorage (RESUELTO)**
+- **❌ Problema**: `TypeError: msg.timestamp.toLocaleTimeString is not a function`
+- **Causa**: Al guardar en localStorage, los objetos Date se convierten a strings
+- **✅ Solución**: 
+  ```tsx
+  // Conversión automática de timestamps al cargar
+  return messages.map(msg => ({
+    ...msg,
+    timestamp: typeof msg.timestamp === 'string' ? new Date(msg.timestamp) : msg.timestamp
+  }));
+  
+  // Validación doble en el render
+  {msg.timestamp instanceof Date 
+    ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  }
+  ```
+
+## 🛠️ **LIMPIEZA DE DATOS CORRUPTOS**
+
+### **Script de Emergencia (Consola del navegador):**
+```javascript
+// Ejecutar en DevTools Console para limpiar datos corruptos
+localStorage.removeItem('niawi-agent-conversations');
+localStorage.removeItem('niawi-agents-config');
+localStorage.removeItem('niawi-users');
+localStorage.removeItem('niawi-company');
+localStorage.removeItem('niawi-activity-logs');
+console.log('🧹 Datos corruptos eliminados');
+window.location.reload();
+```
+
+### **Validación Mejorada:**
+- ✅ Verificación de tipos en carga de conversaciones
+- ✅ Limpieza automática de datos inválidos
+- ✅ Fallback robusto ante errores de parsing
+- ✅ Eliminación automática de localStorage corrupto
+
 ### **1. ERROR LÓGICO CRÍTICO - Chat.tsx (RESUELTO)**
 - **❌ Problema**: Condición contradictoria en líneas 305-320
   ```tsx
