@@ -112,10 +112,10 @@ export const AGENT_SUGGESTIONS: Record<string, readonly string[]> = {
     "¿Qué productos tienen mejor margen?",
   ],
   documents: [
-    "¿Hay documentos pendientes de validación?",
-    "¿Qué tipos de errores son más comunes?",
-    "¿Cuántos documentos se procesaron hoy?",
-    "¿Hay documentos que requieren revisión manual?",
+    "¿Qué tipos de documentos están disponibles en la base de datos?",
+    "Buscar contratos que contengan términos de suministro",
+    "Analizar facturas y mostrar información de pagos",
+    "¿Puedes encontrar documentos relacionados con órdenes de compra?",
   ]
 } as const;
 
