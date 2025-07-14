@@ -138,6 +138,39 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
+  // Función para procesar markdown básico (negritas)
+  const processMarkdown = (text: string) => {
+    const parts = [];
+    let currentIndex = 0;
+    
+    // Buscar patrones de **texto**
+    const boldPattern = /\*\*(.*?)\*\*/g;
+    let match;
+    
+    while ((match = boldPattern.exec(text)) !== null) {
+      // Agregar texto antes del match
+      if (match.index > currentIndex) {
+        parts.push(text.slice(currentIndex, match.index));
+      }
+      
+      // Agregar texto en negrita
+      parts.push(
+        <strong key={`bold-${match.index}`} className="font-semibold">
+          {match[1]}
+        </strong>
+      );
+      
+      currentIndex = match.index + match[0].length;
+    }
+    
+    // Agregar el resto del texto
+    if (currentIndex < text.length) {
+      parts.push(text.slice(currentIndex));
+    }
+    
+    return parts.length > 0 ? parts : [text];
+  };
+
   // Función para formatear el contenido del mensaje
   const formatMessageContent = (content: string) => {
     const paragraphs = content.split('\n\n');
@@ -165,7 +198,7 @@ const Chat = () => {
                     : 'text-sm leading-relaxed'
                 }`}
               >
-                {line.trim()}
+                {processMarkdown(line.trim())}
               </div>
             );
           })}

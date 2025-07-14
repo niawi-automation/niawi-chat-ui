@@ -149,7 +149,7 @@ const Login = () => {
             </a>
           </p>
           <p className="mt-2">
-            © 2024 Niawi. Todos los derechos reservados.
+            © 2025 Niawi. Todos los derechos reservados.
           </p>
         </div>
       </div>
