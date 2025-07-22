@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import AgentSelector from '@/components/AgentSelector';
+import MarkdownRenderer from '@/components/MarkdownRenderer';
 import { useAgent } from '@/hooks/useAgent';
 import type { Message, ApiResponse } from '@/types/agents';
 import { AGENT_SUGGESTIONS } from '@/constants/agents';
@@ -138,73 +139,9 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  // Función para procesar markdown básico (negritas)
-  const processMarkdown = (text: string) => {
-    const parts = [];
-    let currentIndex = 0;
-    
-    // Buscar patrones de **texto**
-    const boldPattern = /\*\*(.*?)\*\*/g;
-    let match;
-    
-    while ((match = boldPattern.exec(text)) !== null) {
-      // Agregar texto antes del match
-      if (match.index > currentIndex) {
-        parts.push(text.slice(currentIndex, match.index));
-      }
-      
-      // Agregar texto en negrita
-      parts.push(
-        <strong key={`bold-${match.index}`} className="font-semibold">
-          {match[1]}
-        </strong>
-      );
-      
-      currentIndex = match.index + match[0].length;
-    }
-    
-    // Agregar el resto del texto
-    if (currentIndex < text.length) {
-      parts.push(text.slice(currentIndex));
-    }
-    
-    return parts.length > 0 ? parts : [text];
-  };
-
-  // Función para formatear el contenido del mensaje
-  const formatMessageContent = (content: string) => {
-    const paragraphs = content.split('\n\n');
-    
-    return paragraphs.map((paragraph, index) => {
-      if (!paragraph.trim()) return null;
-      
-      const lines = paragraph.split('\n');
-      
-      return (
-        <div key={index} className={index > 0 ? 'mt-3' : ''}>
-          {lines.map((line, lineIndex) => {
-            if (!line.trim()) return null;
-            
-            const isListItem = /^[\s]*[-\*•]/.test(line) || /^[\s]*\d+\./.test(line);
-            
-            return (
-              <div
-                key={lineIndex}
-                className={`${
-                  lineIndex > 0 ? 'mt-1' : ''
-                } ${
-                  isListItem 
-                    ? 'ml-3 text-sm leading-relaxed' 
-                    : 'text-sm leading-relaxed'
-                }`}
-              >
-                {processMarkdown(line.trim())}
-              </div>
-            );
-          })}
-        </div>
-      );
-    }).filter(Boolean);
+  // Función para renderizar el contenido del mensaje con Markdown completo
+  const renderMessageContent = (content: string) => {
+    return <MarkdownRenderer>{content}</MarkdownRenderer>;
   };
 
   const sendMessageToAPI = async (userMessage: string): Promise<string> => {
@@ -394,7 +331,7 @@ const Chat = () => {
                     )}
                     
                     <div className="text-sm leading-relaxed">
-                      {formatMessageContent(msg.content)}
+                      {renderMessageContent(msg.content)}
                     </div>
                     
                     <div className="flex items-center gap-2 mt-2 text-xs opacity-70">
