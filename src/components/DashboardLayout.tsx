@@ -12,36 +12,13 @@ import { hasPermission } from '@/constants/agents';
 
 const DashboardLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, logout, requireAuth } = useAuth();
   const { currentUser } = useAgent();
   
-  // Agregar función temporal para limpiar caché y recargar webhooks (solo desarrollo)
-  const handleClearCache = () => {
-    if (import.meta.env.DEV) {
-      const confirmed = window.confirm(
-        '¿Estás seguro de que quieres limpiar todos los datos?\n\n' +
-        'Esto eliminará:\n' +
-        '- Configuración de agentes\n' +
-        '- Conversaciones guardadas\n' +
-        '- Datos de usuarios\n' +
-        '- Logs de actividad'
-      );
-      
-      if (confirmed) {
-        // Limpiar todos los datos de localStorage relacionados con la app
-        localStorage.removeItem('niawi-agents-config');
-        localStorage.removeItem('niawi-agent-conversations');
-        localStorage.removeItem('niawi-users');
-        localStorage.removeItem('niawi-company');
-        localStorage.removeItem('niawi-activity-logs');
-        
-        console.log('🧹 Cache limpiado completamente');
-        window.location.reload();
-      }
-    }
-  };
+
 
   // Proteger rutas - verificar autenticación
   useEffect(() => {
@@ -50,36 +27,11 @@ const DashboardLayout = () => {
 
   // Configurar elementos del menú con control de permisos
   const getMenuItems = () => {
-    const baseItems = [
-      {
-        title: 'Portal de Agentes',
-        path: '/dashboard/chat',
-        icon: Bot,
-        badge: 'IA',
-        badgeColor: 'bg-niawi-primary',
-        subtitle: 'Selecciona y chatea con agentes especializados',
-        permission: { module: 'chat' as const, action: 'access' }
-      }
-    ];
+    const menuItems = [];
 
-    const conditionalItems = [];
-
-    // Administrar Agentes - Solo si puede gestionar agentes
-    if (currentUser && hasPermission(currentUser, 'agents', 'view')) {
-      conditionalItems.push({
-        title: 'Administrar Agentes',
-        path: '/dashboard/agents',
-        icon: Settings,
-        badge: '4',
-        badgeColor: 'bg-niawi-accent',
-        subtitle: 'Gestión y analytics del ecosistema IA',
-        permission: { module: 'agents' as const, action: 'view' }
-      });
-    }
-
-    // Recomendaciones - Solo si puede ver analytics
+    // 1. Recomendaciones - Primera opción si puede ver analytics
     if (currentUser && hasPermission(currentUser, 'analytics', 'view')) {
-      conditionalItems.push({
+      menuItems.push({
         title: 'Recomendaciones',
         path: '/dashboard/recommendations',
         icon: TrendingUp,
@@ -90,9 +42,33 @@ const DashboardLayout = () => {
       });
     }
 
-    // Integraciones - Solo para admin y super_admin
+    // 2. Chat IA - Siempre disponible como segunda opción
+    menuItems.push({
+      title: 'Chat IA',
+      path: '/dashboard/chat',
+      icon: Bot,
+      badge: 'IA',
+      badgeColor: 'bg-niawi-primary',
+      subtitle: 'Conversa con agentes de IA especializados',
+      permission: { module: 'chat' as const, action: 'access' }
+    });
+
+    // 3. Administrar Agentes - Solo si puede gestionar agentes
+    if (currentUser && hasPermission(currentUser, 'agents', 'view')) {
+      menuItems.push({
+        title: 'Administrar Agentes',
+        path: '/dashboard/agents',
+        icon: Settings,
+        badge: '4',
+        badgeColor: 'bg-niawi-accent',
+        subtitle: 'Gestión y analytics del ecosistema IA',
+        permission: { module: 'agents' as const, action: 'view' }
+      });
+    }
+
+    // 4. Integraciones - Solo para admin y super_admin
     if (currentUser && ['admin', 'super_admin'].includes(currentUser.role)) {
-      conditionalItems.push({
+      menuItems.push({
         title: 'Integraciones',
         path: '/dashboard/integrations',
         icon: Zap,
@@ -103,9 +79,9 @@ const DashboardLayout = () => {
       });
     }
 
-    // Configuración - Solo si puede ver settings
+    // 5. Configuración - Solo si puede ver settings
     if (currentUser && hasPermission(currentUser, 'settings', 'view')) {
-      conditionalItems.push({
+      menuItems.push({
         title: 'Configuración',
         path: '/dashboard/settings',
         icon: Shield,
@@ -116,7 +92,7 @@ const DashboardLayout = () => {
       });
     }
 
-    return [...baseItems, ...conditionalItems];
+    return menuItems;
   };
 
   const menuItems = getMenuItems();
@@ -178,21 +154,42 @@ const DashboardLayout = () => {
   return (
     <div className="min-h-screen max-h-screen bg-niawi-bg flex overflow-hidden">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-80 bg-niawi-surface border-r border-niawi-border transform ${
+      <div className={`fixed inset-y-0 left-0 z-50 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-80'} w-80 bg-niawi-surface border-r border-niawi-border transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 lg:w-80 flex-shrink-0`}>
+      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0`}>
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-niawi-border flex-shrink-0">
-            <NiawiLogo size="md" />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-muted-foreground hover:text-foreground"
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
+            {sidebarCollapsed ? (
+              <div className="w-8 h-8 bg-niawi-primary rounded-lg flex items-center justify-center">
+                <Bot className="w-4 h-4 text-white" />
+              </div>
+            ) : (
+              <NiawiLogo size="md" />
+            )}
+            
+            <div className="flex items-center gap-2">
+              {/* Botón colapsar desktop */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                className="hidden lg:flex text-muted-foreground hover:text-foreground"
+                title={sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+              >
+                <Menu className="w-4 h-4" />
+              </Button>
+              
+              {/* Botón cerrar móvil */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden text-muted-foreground hover:text-foreground"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+            </div>
           </div>
 
           {/* Navigation */}
@@ -204,24 +201,29 @@ const DashboardLayout = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center px-4 py-3 rounded-xl transition-all duration-200 ${
+                  className={`group flex items-center ${sidebarCollapsed ? 'px-3 py-3 justify-center' : 'px-4 py-3'} rounded-xl transition-all duration-200 ${
                     isActive(item.path)
                       ? 'bg-niawi-primary text-white shadow-lg'
                       : 'text-muted-foreground hover:text-foreground hover:bg-niawi-border/50'
                   }`}
+                  title={sidebarCollapsed ? item.title : undefined}
                 >
-                  <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium truncate">{item.title}</span>
-                      {item.badge && (
-                        <Badge className={`${item.badgeColor} text-white text-xs flex-shrink-0 ml-2`}>
-                          {item.badge}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-current opacity-70 truncate">{item.subtitle}</p>
-                  </div>
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  {!sidebarCollapsed && (
+                    <>
+                      <div className="flex-1 min-w-0 ml-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium truncate">{item.title}</span>
+                          {item.badge && (
+                            <Badge className={`${item.badgeColor} text-white text-xs flex-shrink-0 ml-2`}>
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-current opacity-70 truncate">{item.subtitle}</p>
+                      </div>
+                    </>
+                  )}
                 </Link>
               );
             })}
@@ -229,37 +231,59 @@ const DashboardLayout = () => {
 
           {/* User Profile */}
           <div className="p-6 border-t border-niawi-border flex-shrink-0">
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-niawi-border/30">
-              <div className="relative flex-shrink-0">
-                <Avatar className="w-10 h-10">
-                  <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
-                  <AvatarFallback className="bg-niawi-primary text-white">
-                    {currentUser ? getUserInitials(currentUser.name) : 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                {/* Badge de rol en el avatar */}
-                <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface`}></div>
+            {sidebarCollapsed ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
+                    <AvatarFallback className="bg-niawi-primary text-white">
+                      {currentUser ? getUserInitials(currentUser.name) : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface`}></div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-muted-foreground hover:text-niawi-danger"
+                  title="Cerrar sesión"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {currentUser?.name || 'Usuario'}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {currentUser?.email || 'Sin email'}
-                </p>
-                <Badge className={`${getRoleBadgeColor()} text-white text-xs mt-1`}>
-                  {getRoleLabel()}
-                </Badge>
+            ) : (
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-niawi-border/30">
+                <div className="relative flex-shrink-0">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
+                    <AvatarFallback className="bg-niawi-primary text-white">
+                      {currentUser ? getUserInitials(currentUser.name) : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface`}></div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">
+                    {currentUser?.name || 'Usuario'}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    {currentUser?.email || 'Sin email'}
+                  </p>
+                  <Badge className={`${getRoleBadgeColor()} text-white text-xs mt-1`}>
+                    {getRoleLabel()}
+                  </Badge>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="text-muted-foreground hover:text-niawi-danger flex-shrink-0"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="text-muted-foreground hover:text-niawi-danger flex-shrink-0"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -267,18 +291,18 @@ const DashboardLayout = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         {/* Mobile header */}
-        <div className="lg:hidden bg-niawi-surface border-b border-niawi-border px-4 py-3 flex-shrink-0">
+        <div className="lg:hidden bg-niawi-surface border-b border-niawi-border px-4 py-4 flex-shrink-0 shadow-sm">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setSidebarOpen(true)}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-foreground hover:bg-niawi-border/30 transition-colors"
             >
               <Menu className="w-5 h-5" />
             </Button>
-            <h1 className="text-lg font-semibold text-foreground truncate">
-              {menuItems.find(item => isActive(item.path))?.title || 'Copiloto Niawi'}
+            <h1 className="text-lg font-semibold text-foreground truncate px-4">
+              {menuItems.find(item => isActive(item.path))?.title || 'Etres AI Nexus'}
             </h1>
             <div className="w-9 flex-shrink-0" /> {/* Spacer for centering */}
           </div>
@@ -298,27 +322,9 @@ const DashboardLayout = () => {
         />
       )}
 
-      {/* Botón temporal de desarrollo para limpiar caché */}
-      {import.meta.env.DEV && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <Button
-            onClick={handleClearCache}
-            variant="outline"
-            size="sm"
-            className="bg-red-500 hover:bg-red-600 text-white border-red-500"
-          >
-            🧹 Limpiar Caché
-          </Button>
-        </div>
-      )}
 
-      {/* 
-        TODO: Sistema de Roles - Planificación Futura
-        - Implementar sistema super_admin que pueda crear subcuentas
-        - Mover gestión de roles a página Settings
-        - RoleSwitcher temporal removido (era popup molesto)
-        - Lógica de roles se mantiene en AgentContext
-      */}
+
+
     </div>
   );
 };

@@ -58,7 +58,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           
           td: ({ children }) => (
             <td className="px-3 py-2 text-xs text-foreground min-w-0 align-top">
-              <div className="break-words hyphens-auto">
+              <div className="break-words hyphens-auto overflow-wrap-anywhere">
                 {children}
               </div>
             </td>

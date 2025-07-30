@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Send, Paperclip, Bot, AlertCircle, RotateCcw, Zap, Brain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -22,6 +23,7 @@ const Chat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   const { selectedAgent, getAgentEndpoint, currentUser } = useAgent();
 
@@ -129,6 +131,26 @@ const Chat = () => {
 
   // Determinar si estamos en una conversación activa
   const isActiveConversation = messages.length > 1;
+
+  // Función para manejar el cambio del textarea con auto-resize
+  const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setMessage(value);
+    
+    // Auto-resize del textarea
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
+    }
+  };
+
+  // Función para manejar Enter/Shift+Enter
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e as any);
+    }
+  };
 
   // Auto-scroll al final de los mensajes
   const scrollToBottom = () => {
@@ -285,25 +307,25 @@ const Chat = () => {
   return (
     <div className="page-container">
       {/* Header con selector de agente */}
-      <div className="flex-shrink-0 p-6 pb-0">
+      <div className="flex-shrink-0 p-4 pb-0 sm:p-6">
         <AgentSelector />
       </div>
 
       {/* Chat Container */}
-      <div className="flex-1 p-6 pt-6 overflow-hidden">
-        <Card className="h-full bg-niawi-surface border-niawi-border flex flex-col overflow-hidden">
+      <div className="flex-1 p-4 pt-4 sm:p-6 sm:pt-6 overflow-hidden">
+        <Card className="h-full bg-niawi-surface border-niawi-border flex flex-col overflow-hidden shadow-xl">
           <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-thin scrollbar-track-niawi-surface scrollbar-thumb-niawi-border">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-track-niawi-surface scrollbar-thumb-niawi-border chat-messages">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-4 ${
+                  className={`flex gap-4 animate-fade-in ${
                     msg.type === 'user' ? 'justify-end' : 'justify-start'
                   }`}
                 >
                   {msg.type === 'assistant' && selectedAgent && (
-                    <Avatar className={`w-8 h-8 ${selectedAgent.bgColor} flex-shrink-0`}>
+                    <Avatar className={`w-8 h-8 ${selectedAgent.bgColor} flex-shrink-0 mt-1`}>
                       <AvatarFallback className={`${selectedAgent.color} ${selectedAgent.bgColor} border-0`}>
                         {msg.isLoading ? (
                           <Brain className="w-4 h-4 animate-pulse" />
@@ -315,10 +337,10 @@ const Chat = () => {
                   )}
                   
                   <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                    className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-3 transition-all duration-200 hover:shadow-lg ${
                       msg.type === 'user'
-                        ? 'bg-niawi-primary text-white ml-auto'
-                        : `bg-niawi-border/30 text-foreground ${
+                        ? 'bg-niawi-primary text-white ml-auto shadow-lg shadow-niawi-primary/20'
+                        : `bg-niawi-border/30 text-foreground shadow-sm ${
                             msg.hasError ? 'border border-niawi-danger/50' : ''
                           }`
                     }`}
@@ -330,7 +352,7 @@ const Chat = () => {
                       </div>
                     )}
                     
-                    <div className="text-sm leading-relaxed">
+                    <div className="text-sm leading-relaxed break-words overflow-wrap-anywhere">
                       {renderMessageContent(msg.content)}
                     </div>
                     
@@ -372,24 +394,24 @@ const Chat = () => {
               </div>
             )}
 
-            {/* Suggestions - Solo si no hay conversación activa */}
+            {/* Suggestions - Solo si no hay conversación activa y en pantallas grandes */}
             {!isActiveConversation && selectedAgent && (
-              <div className="px-6 pb-4 flex-shrink-0">
-                <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="hidden md:block px-6 pb-4 flex-shrink-0">
+                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
                   <Zap className="w-4 h-4 text-niawi-accent" />
                   <span>Sugerencias para {selectedAgent.department}</span>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                   {suggestions.map((suggestion, index) => (
                     <Button
                       key={index}
                       variant="outline"
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="text-left h-auto p-3 border-niawi-border bg-niawi-border/20 hover:bg-niawi-border/40 text-sm justify-start"
+                      className="text-left h-auto p-4 border-niawi-border bg-niawi-border/20 hover:bg-niawi-border/40 hover:scale-[1.02] text-sm justify-start transition-all duration-200 shadow-sm hover:shadow-lg"
                       disabled={isLoading}
                     >
-                      <Zap className="w-4 h-4 mr-2 text-niawi-accent flex-shrink-0" />
+                      <Zap className="w-4 h-4 mr-3 text-niawi-accent flex-shrink-0" />
                       <span className="truncate">{suggestion}</span>
                     </Button>
                   ))}
@@ -398,7 +420,7 @@ const Chat = () => {
             )}
 
             {/* Input Area */}
-            <div className="border-t border-niawi-border p-4 flex-shrink-0">
+            <div className="border-t border-niawi-border p-4 pb-6 flex-shrink-0">
               {selectedAgent && (
                 <div className="flex items-center gap-2 mb-2">
                   <Badge className={`${selectedAgent.bgColor} ${selectedAgent.color} border-0 text-xs`}>
@@ -410,31 +432,38 @@ const Chat = () => {
                 </div>
               )}
               
-              <form onSubmit={handleSendMessage} className="flex gap-2">
+              <form onSubmit={handleSendMessage} className="flex gap-3 items-end">
                 <div className="flex-1 relative">
-                  <Input
+                  <Textarea
+                    ref={textareaRef}
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={handleTextareaChange}
+                    onKeyDown={handleKeyDown}
                     placeholder={selectedAgent ? `Pregunta a tu ${selectedAgent.name}...` : 'Selecciona un agente primero...'}
-                    className="pr-12 bg-niawi-bg border-niawi-border focus:border-niawi-primary"
+                    className="min-h-[44px] max-h-[120px] resize-none pr-12 bg-niawi-bg border-niawi-border focus:border-niawi-primary transition-all duration-200"
                     disabled={isLoading || !selectedAgent}
+                    rows={1}
                   />
                   <Button
                     type="button"
                     size="sm"
                     variant="ghost"
-                    className="absolute right-1 top-1 w-8 h-8 text-muted-foreground hover:text-foreground"
+                    className="absolute right-2 top-2 w-8 h-8 text-muted-foreground hover:text-foreground"
                     disabled={isLoading}
                   >
                     <Paperclip className="w-4 h-4" />
                   </Button>
+                  {/* Indicador de shortcuts */}
+                  <div className="absolute -bottom-5 left-0 text-xs text-muted-foreground opacity-75">
+                    <kbd className="px-1 py-0.5 bg-niawi-border/30 rounded text-xs">Enter</kbd> enviar • <kbd className="px-1 py-0.5 bg-niawi-border/30 rounded text-xs">Shift+Enter</kbd> nueva línea
+                  </div>
                 </div>
                 
                 <Button
                   type="submit"
                   size="sm"
                   disabled={!message.trim() || isLoading || !selectedAgent}
-                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white"
+                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white h-[44px] px-4"
                 >
                   {isLoading ? (
                     <Brain className="w-4 h-4 animate-pulse" />
