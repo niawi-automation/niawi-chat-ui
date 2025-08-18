@@ -57,7 +57,6 @@ const AgentSelector: React.FC = () => {
       </Button>
     );
   }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
