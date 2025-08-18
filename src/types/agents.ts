@@ -121,12 +121,34 @@ export interface Message {
   isLoading?: boolean;
   hasError?: boolean;
   agentId?: string;
+  // Soporte opcional para contenido multimedia (MVP)
+  attachments?: Attachment[];
+  // Transcripción opcional para notas de voz
+  transcript?: string;
 }
 
 export interface ApiResponse {
   output: string;
   status?: 'success' | 'error';
   timestamp?: string;
+}
+
+// Definición de adjuntos para mensajes (MVP multimedia)
+export interface Attachment {
+  id: string;
+  name: string;
+  mimeType: string;
+  size: number; // bytes
+  kind: 'image' | 'audio' | 'document' | 'other';
+  encoding: 'base64' | 'url';
+  // Si encoding es base64, data contiene solo el payload base64 (sin prefijo data:)
+  data?: string;
+  // Si encoding es url, url contiene la ubicación remota accesible
+  url?: string;
+  // Metadatos opcionales
+  width?: number;
+  height?: number;
+  durationMs?: number;
 }
 
 export interface AgentSuggestions {
