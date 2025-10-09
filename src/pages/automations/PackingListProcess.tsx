@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, Download, Clock } from 'lucide-react';
 import { AutomationProcessCard } from '@/components/AutomationProcessCard';
-import ResultsTable from '@/components/ResultsTable';
+import PackingListResultsTable from '@/components/PackingListResultsTable';
 import { ProcessResults } from '@/types/automations';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -79,7 +79,11 @@ const PackingListProcess: React.FC = () => {
                 {Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0')}
               </span>
             </div>
-            <ResultsTable rows={currentResults.data} />
+            <PackingListResultsTable
+              data={currentResults.data}
+              defaultPageSize={10}
+              pageSizeOptions={[10, 25, 50]}
+            />
             {currentResults.fileUrl && (
               <div className="flex items-center justify-center">
                 <Button

@@ -1,4 +1,4 @@
-import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse } from '@/types/automations';
+import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListWebhookResponse, PackingListRecord } from '@/types/automations';
 
 // Configuración de tipos de proceso
 export const PROCESS_TYPES_CONFIG = {
@@ -22,7 +22,7 @@ export const PROCESS_TYPES_CONFIG = {
     id: 'PACKING_LIST' as ProcessType,
     label: 'Packing List',
     description: 'Procesamiento de listas de empaque',
-    webhookUrl: import.meta.env.VITE_N8N_WEBHOOK_PACKING || '',
+    webhookUrl: 'https://automation.wtsusa.us/webhook/automatizacionpackinglist',
     acceptedFileTypes: ['.xlsx', '.xls'],
     maxFileSize: 10 // MB
   }
@@ -120,6 +120,62 @@ export const processFile = async (
           data: allRecords,
           processedAt: new Date().toISOString(),
           recordCount: allRecords.length
+        };
+        return {
+          success: true,
+          data: wrapped,
+          processId: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        };
+      }
+    }
+
+    // Caso especial para PACKING_LIST: formato con message.content y packs anidados
+    if (processType === 'PACKING_LIST') {
+      const flattenedRecords: PackingListRecord[] = [];
+      
+      // Manejar si es array o objeto único
+      const dataArray = Array.isArray(result) ? result : [result];
+      
+      dataArray.forEach((item: any) => {
+        // Verificar si tiene la estructura esperada: { index, message: { role, content } }
+        if (item.message?.content?.packs && Array.isArray(item.message.content.packs)) {
+          const { buyerPONumber, PONumberEDI } = item.message.content;
+          
+          item.message.content.packs.forEach((pack: any) => {
+            if (pack.sizeDetail && Array.isArray(pack.sizeDetail)) {
+              pack.sizeDetail.forEach((sizeDetail: any) => {
+                const flattenedRecord: PackingListRecord = {
+                  BuyerPO: buyerPONumber || '',
+                  PONumberEDI: PONumberEDI || '',
+                  DC: pack.DC || '',
+                  City: pack.City || '',
+                  State: pack.State || '',
+                  PostalCode: pack.PostalCode || '',
+                  Country: pack.Country || '',
+                  Style: pack.style || '',
+                  ColorName: sizeDetail.ColorName || '',
+                  Size: sizeDetail.Size || '',
+                  ShippedQty: sizeDetail.ShippedQty || 0,
+                  CartonsQty: pack.CartonsQty || 0,
+                  CartonLength: pack.CartonLength || 0,
+                  CartonWidth: pack.CartonWidth || 0,
+                  CartonHeight: pack.CartonHeight || 0,
+                  CartonNetWg: pack.CartonNetWg || 0,
+                  CartonGrossWg: pack.CartonGrossWg || 0
+                };
+                flattenedRecords.push(flattenedRecord);
+              });
+            }
+          });
+        }
+      });
+
+      if (flattenedRecords.length > 0) {
+        const wrapped: ProcessResults = {
+          success: true,
+          data: flattenedRecords,
+          processedAt: new Date().toISOString(),
+          recordCount: flattenedRecords.length
         };
         return {
           success: true,

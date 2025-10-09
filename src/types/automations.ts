@@ -88,6 +88,72 @@ export interface ProcessFileResponse {
   processId: string;
 }
 
+// Tipos para Packing List
+export interface PackingListWebhookResponse {
+  index: number;
+  message: {
+    role: string;
+    content: PackingListContent;
+  };
+}
+
+export interface PackingListContent {
+  buyerName: string;
+  factoryName: string;
+  userName: string;
+  buyerERPCode: string;
+  factoryERPCode: string;
+  buyerPONumber: string;
+  PONumberEDI: string;
+  packs: PackingListPack[];
+}
+
+export interface PackingListPack {
+  destinationCode: string;
+  style: string;
+  DC: string;
+  Address: string;
+  City: string;
+  PostalCode: string;
+  State: string;
+  Country: string;
+  CartonsQty: number;
+  CartonLength: number;
+  CartonWidth: number;
+  CartonHeight: number;
+  CartonNetWg: number;
+  CartonGrossWg: number;
+  nroPacking: number;
+  sizeDetail: PackingListSizeDetail[];
+}
+
+export interface PackingListSizeDetail {
+  ColorName: string;
+  Size: string;
+  ShippedQty: number;
+}
+
+// Registro aplanado para tabla/Excel
+export interface PackingListRecord {
+  BuyerPO: string;
+  PONumberEDI: string;
+  DC: string;
+  City: string;
+  State: string;
+  PostalCode: string;
+  Country: string;
+  Style: string;
+  ColorName: string;
+  Size: string;
+  ShippedQty: number;
+  CartonsQty: number;
+  CartonLength: number;
+  CartonWidth: number;
+  CartonHeight: number;
+  CartonNetWg: number;
+  CartonGrossWg: number;
+}
+
 // Estado local del componente
 export interface AutomationState {
   selectedFile: File | null;
