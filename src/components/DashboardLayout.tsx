@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { TrendingUp, Bot, Zap, Settings, Menu, LogOut, User, Shield } from 'lucide-react';
+import { TrendingUp, Bot, Zap, Settings, Menu, LogOut, User, Shield, FileSpreadsheet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -79,7 +79,18 @@ const DashboardLayout = () => {
       });
     }
 
-    // 5. Configuración - Solo si puede ver settings
+    // 5. Automatizaciones - Acceso general para todos los usuarios
+    menuItems.push({
+      title: 'Automatizaciones',
+      path: '/dashboard/automations',
+      icon: FileSpreadsheet,
+      badge: '3',
+      badgeColor: 'bg-niawi-secondary',
+      subtitle: 'Procesamiento automático de archivos Excel',
+      permission: null // Acceso general
+    });
+
+    // 6. Configuración - Solo si puede ver settings
     if (currentUser && hasPermission(currentUser, 'settings', 'view')) {
       menuItems.push({
         title: 'Configuración',
