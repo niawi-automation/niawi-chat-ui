@@ -1,4 +1,4 @@
-import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListWebhookResponse, PackingListRecord } from '@/types/automations';
+import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord } from '@/types/automations';
 
 // Configuración de tipos de proceso
 export const PROCESS_TYPES_CONFIG = {
@@ -97,20 +97,15 @@ export const processFile = async (
     
     const result = await response.json();
 
-    // Caso especial para WIP: nuevo formato con file_name y records
+    // Caso especial para WIP: nuevo formato con records directamente
     if (processType === 'WIP' && Array.isArray(result)) {
-      // Procesar el nuevo formato WIP: [{ file_name: "...", records: [...] }]
+      // Procesar el nuevo formato WIP: [{ records: [...] }]
       const wipData = result as WipWebhookResponse[];
       const allRecords: Array<Record<string, any>> = [];
       
       wipData.forEach((item) => {
         if (item.records && Array.isArray(item.records)) {
-          // Agregar file_name a cada record para contexto
-          const recordsWithFileName = item.records.map(record => ({
-            ...record,
-            source_file: item.file_name
-          }));
-          allRecords.push(...recordsWithFileName);
+          allRecords.push(...item.records);
         }
       });
 

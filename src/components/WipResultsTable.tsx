@@ -1,6 +1,7 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { exportWipToXlsx } from '@/lib/exportExcel';
 
 interface WipResultsTableProps {
@@ -30,8 +31,7 @@ const WIP_TABLE_COLUMNS = [
   'actual_start_date',
   'reason_desc',
   'end_process',
-  'actual_end_date',
-  'source_file'
+  'actual_end_date'
 ];
 
 // Mapeo de campos a nombres de columnas más legibles
@@ -54,8 +54,7 @@ const WIP_COLUMN_NAMES: Record<string, string> = {
   'actual_start_date': 'Actual Start Date',
   'reason_desc': 'Reason Desc',
   'end_process': 'End Process',
-  'actual_end_date': 'Actual End Date',
-  'source_file': 'Source File'
+  'actual_end_date': 'Actual End Date'
 };
 
 // Función para transformar datos del webhook a formato de tabla
@@ -63,17 +62,14 @@ const transformWipData = (rawData: Array<Record<string, any>>): Array<Record<str
   const transformedData: Array<Record<string, any>> = [];
 
   rawData.forEach((item) => {
-    // Si el item tiene file_name y records, procesar los records
-    if (item && typeof item === 'object' && item.file_name && Array.isArray(item.records)) {
+    // Si el item tiene records directamente (nuevo formato)
+    if (item && typeof item === 'object' && Array.isArray(item.records)) {
       item.records.forEach((record: Record<string, any>) => {
-        transformedData.push({
-          ...record,
-          source_file: item.file_name
-        });
+        transformedData.push(record);
       });
     } 
     // Si el item ya es un record individual (ya procesado)
-    else if (item && typeof item === 'object' && (item.buyer_name || item.article_code)) {
+    else if (item && typeof item === 'object' && (item.buyer_name !== undefined || item.article_code)) {
       transformedData.push(item);
     }
   });
@@ -89,20 +85,38 @@ export const WipResultsTable: React.FC<WipResultsTableProps> = ({
 }) => {
   const [page, setPage] = React.useState(1);
   const [pageSize, setPageSize] = React.useState(defaultPageSize);
+  const [searchTerm, setSearchTerm] = React.useState('');
 
   // Transformar los datos
   const transformedData = React.useMemo(() => transformWipData(data), [data]);
 
-  const total = transformedData.length;
+  // Filtrar datos basado en el término de búsqueda
+  const filteredData = React.useMemo(() => {
+    if (!searchTerm.trim()) return transformedData;
+    
+    const term = searchTerm.toLowerCase();
+    return transformedData.filter((row) =>
+      Object.values(row).some((value) =>
+        value != null && String(value).toLowerCase().includes(term)
+      )
+    );
+  }, [transformedData, searchTerm]);
+
+  const total = filteredData.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const start = (page - 1) * pageSize;
   const end = Math.min(start + pageSize, total);
-  const paginated = React.useMemo(() => transformedData.slice(start, end), [transformedData, start, end]);
+  const paginated = React.useMemo(() => filteredData.slice(start, end), [filteredData, start, end]);
 
   React.useEffect(() => {
     // Ajustar página si el tamaño cambia o el total disminuye
     if (page > totalPages) setPage(totalPages);
   }, [page, totalPages]);
+
+  React.useEffect(() => {
+    // Reset página cuando cambie el filtro de búsqueda
+    setPage(1);
+  }, [searchTerm]);
 
   if (!transformedData || transformedData.length === 0) {
     return (
@@ -116,13 +130,28 @@ export const WipResultsTable: React.FC<WipResultsTableProps> = ({
     if (onExport) {
       onExport();
     } else {
-      // Usar los datos transformados que ya están siendo mostrados en la tabla
-      exportWipToXlsx(transformedData, 'WIP_procesado.xlsx');
+      // Usar los datos filtrados que ya están siendo mostrados en la tabla
+      exportWipToXlsx(filteredData, 'WIP_procesado.xlsx');
     }
   };
 
   return (
     <div className="space-y-4">
+      {/* Barra de herramientas superior con búsqueda y exportar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Input
+            placeholder="Buscar en la tabla..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="max-w-xs bg-transparent border-niawi-border text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+        <Button onClick={handleExport} size="sm" className="bg-niawi-accent hover:bg-niawi-accent/90">
+          Exportar a Excel
+        </Button>
+      </div>
+
       <div className="border border-niawi-border rounded-lg overflow-auto">
         <Table>
           <TableHeader>
@@ -188,9 +217,6 @@ export const WipResultsTable: React.FC<WipResultsTableProps> = ({
             </Button>
           </div>
 
-          <Button onClick={handleExport} size="sm" className="bg-niawi-accent hover:bg-niawi-accent/90">
-            Exportar a Excel
-          </Button>
         </div>
       </div>
     </div>

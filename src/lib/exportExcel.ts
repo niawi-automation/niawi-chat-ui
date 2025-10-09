@@ -20,8 +20,7 @@ export const WIP_COLUMNS: string[] = [
   'ActualStartDate',
   'ReasonDesc',
   'EndProcess',
-  'ActualEndDate',
-  'Source File'
+  'ActualEndDate'
 ];
 
 // Columnas fijas para Packing List en el orden solicitado
@@ -65,8 +64,7 @@ const WIP_FIELD_MAPPING: Record<string, string> = {
   'actual_start_date': 'ActualStartDate',
   'reason_desc': 'ReasonDesc',
   'end_process': 'EndProcess',
-  'actual_end_date': 'ActualEndDate',
-  'source_file': 'Source File'
+  'actual_end_date': 'ActualEndDate'
 };
 
 // Mapeo de campos del webhook a columnas de exportación para Packing List

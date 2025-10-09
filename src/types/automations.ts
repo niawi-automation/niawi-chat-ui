@@ -27,20 +27,19 @@ export interface ProcessResults {
   recordCount?: number;
 }
 
-// Nuevo tipo para el formato WIP con file_name y records
+// Nuevo tipo para el formato WIP con records directamente
 export interface WipWebhookResponse {
-  file_name: string;
   records: Array<WipRecord>;
 }
 
 export interface WipRecord {
-  buyer_name: string;
-  pwn_no: string | null;
+  buyer_name: string | null;
+  pwn_no: number;
   po_no: string;
   article_code: string;
   article_desc: string | null;
   buyer_style_ref: string | null;
-  delivery_date: string;
+  delivery_date: string | null;
   color_code: string | null;
   color_name: string;
   size_code: string | null;
