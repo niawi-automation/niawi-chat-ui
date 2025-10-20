@@ -523,3 +523,4 @@ Ambas mejoras han sido **completamente implementadas y probadas**:
 
 *Documentación generada durante las mejoras al sistema de temas y corrección del sidebar colapsado*
 
+
