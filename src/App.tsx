@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AgentProvider } from "@/contexts/AgentContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import DashboardLayout from "./components/DashboardLayout";
@@ -23,6 +24,7 @@ import NotFound from "./pages/NotFound";
 import AgentsDashboard from "./pages/AgentsDashboard";
 
 const queryClient = new QueryClient();
+
 
 const App = () => (
   <ErrorBoundary>

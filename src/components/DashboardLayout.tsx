@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import NiawiLogo from './NiawiLogo';
+import ThemeToggle from './ThemeToggle';
 // import RoleSwitcher from './RoleSwitcher'; // TODO: Mover a Settings cuando se implemente sistema super_admin
 import { useAuth } from '@/hooks/useAuth';
 import { useAgent } from '@/hooks/useAgent';
@@ -15,7 +16,7 @@ const DashboardLayout = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, logout, requireAuth } = useAuth();
+  const { isAuthenticated, isLoading, logout, requireAuth, currentUser: authUser } = useAuth();
   const { currentUser } = useAgent();
   
 
@@ -29,6 +30,21 @@ const DashboardLayout = () => {
   const getMenuItems = () => {
     const menuItems = [];
 
+    // Si es usuario bot, solo mostrar automatizaciones
+    if (authUser && authUser.accessType === 'automations_only') {
+      menuItems.push({
+        title: 'Automatizaciones',
+        path: '/dashboard/automations',
+        icon: FileSpreadsheet,
+        badge: '3',
+        badgeColor: 'bg-niawi-secondary',
+        subtitle: 'Procesamiento automático de archivos Excel',
+        permission: null
+      });
+      return menuItems;
+    }
+
+    // Menú completo para usuarios normales
     // 1. Recomendaciones - Primera opción si puede ver analytics
     if (currentUser && hasPermission(currentUser, 'analytics', 'view')) {
       menuItems.push({
@@ -141,70 +157,92 @@ const DashboardLayout = () => {
 
   // Función para obtener el color del badge del rol
   const getRoleBadgeColor = () => {
-    if (!currentUser) return 'bg-gray-500';
-    switch (currentUser.role) {
+    if (!authUser) return 'bg-gray-500';
+    switch (authUser.role) {
       case 'super_admin': return 'bg-red-500';
       case 'admin': return 'bg-purple-500';
       case 'manager': return 'bg-blue-500';
       case 'employee': return 'bg-green-500';
+      case 'bot_user': return 'bg-orange-500';
       default: return 'bg-gray-500';
     }
   };
 
   const getRoleLabel = () => {
-    if (!currentUser) return 'Usuario';
-    switch (currentUser.role) {
+    if (!authUser) return 'Usuario';
+    switch (authUser.role) {
       case 'super_admin': return 'Super Admin';
       case 'admin': return 'Administrador';
       case 'manager': return 'Manager';
       case 'employee': return 'Empleado';
-      default: return currentUser.role;
+      case 'bot_user': return 'Usuario Bot';
+      default: return authUser.role;
     }
   };
 
   return (
-    <div className="min-h-screen max-h-screen bg-niawi-bg flex overflow-hidden">
+    <div className="min-h-screen max-h-screen gradient-dashboard flex overflow-hidden">
       {/* Sidebar */}
       <div className={`fixed inset-y-0 left-0 z-50 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-80'} w-80 bg-niawi-surface border-r border-niawi-border transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0`}>
+      } sidebar-transition lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0 transition-all duration-300 ease-in-out`}>
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-niawi-border flex-shrink-0">
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center px-3' : 'justify-between px-6'} border-b border-niawi-border flex-shrink-0 transition-all duration-300`}>
             {sidebarCollapsed ? (
-              <div className="w-8 h-8 bg-niawi-primary rounded-lg flex items-center justify-center">
-                <Bot className="w-4 h-4 text-white" />
+              <div className="flex flex-col items-center gap-2 py-4">
+                {/* Botón expandir cuando está colapsado */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarCollapsed(false)}
+                  className="hidden lg:flex text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200"
+                  title="Expandir sidebar"
+                >
+                  <Menu className="w-4 h-4" />
+                </Button>
+                
+                <div className="w-8 h-8 bg-niawi-primary rounded-lg flex items-center justify-center hover:bg-niawi-primary/90 transition-colors">
+                  <Bot className="w-4 h-4 text-white" />
+                </div>
+                
+                {/* Theme Toggle compacto */}
+                <ThemeToggle className="hidden lg:flex scale-75" />
               </div>
             ) : (
-              <NiawiLogo size="md" />
+              <>
+                <NiawiLogo size="md" />
+                <div className="flex items-center gap-2">
+                  {/* Theme Toggle - Solo en desktop */}
+                  <ThemeToggle className="hidden lg:flex" />
+                  
+                  {/* Botón colapsar desktop */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSidebarCollapsed(true)}
+                    className="hidden lg:flex text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200"
+                    title="Colapsar sidebar"
+                  >
+                    <Menu className="w-4 h-4" />
+                  </Button>
+                </div>
+              </>
             )}
             
-            <div className="flex items-center gap-2">
-              {/* Botón colapsar desktop */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-                className="hidden lg:flex text-muted-foreground hover:text-foreground"
-                title={sidebarCollapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
-              >
-                <Menu className="w-4 h-4" />
-              </Button>
-              
-              {/* Botón cerrar móvil */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden text-muted-foreground hover:text-foreground"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-            </div>
+            {/* Botón cerrar móvil - siempre visible en móvil */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200"
+            >
+              <Menu className="w-5 h-5" />
+            </Button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-6 space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-niawi-surface scrollbar-thumb-niawi-border">
+          <nav className={`flex-1 ${sidebarCollapsed ? 'p-3' : 'p-6'} space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-niawi-surface scrollbar-thumb-niawi-border transition-all duration-300`}>
             {menuItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -212,14 +250,21 @@ const DashboardLayout = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center ${sidebarCollapsed ? 'px-3 py-3 justify-center' : 'px-4 py-3'} rounded-xl transition-all duration-200 ${
+                  className={`group flex items-center ${sidebarCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'} rounded-xl transition-all duration-300 hover-scale relative ${
                     isActive(item.path)
-                      ? 'bg-niawi-primary text-white shadow-lg'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-niawi-border/50'
+                      ? 'bg-niawi-primary text-white shadow-lg hover:shadow-xl hover:shadow-niawi-primary/30'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 hover:shadow-md'
                   }`}
                   title={sidebarCollapsed ? item.title : undefined}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <div className="relative">
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    {sidebarCollapsed && item.badge && (
+                      <div className={`absolute -top-1 -right-1 w-3 h-3 ${item.badgeColor} rounded-full text-xs flex items-center justify-center`}>
+                        <span className="text-[8px] text-white font-bold">{item.badge}</span>
+                      </div>
+                    )}
+                  </div>
                   {!sidebarCollapsed && (
                     <>
                       <div className="flex-1 min-w-0 ml-3">
@@ -241,17 +286,17 @@ const DashboardLayout = () => {
           </nav>
 
           {/* User Profile */}
-          <div className="p-6 border-t border-niawi-border flex-shrink-0">
+          <div className={`${sidebarCollapsed ? 'p-3' : 'p-6'} border-t border-niawi-border flex-shrink-0 transition-all duration-300`}>
             {sidebarCollapsed ? (
               <div className="flex flex-col items-center gap-2">
                 <div className="relative">
                   <Avatar className="w-10 h-10">
                     <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
                     <AvatarFallback className="bg-niawi-primary text-white">
-                      {currentUser ? getUserInitials(currentUser.name) : 'U'}
+                      {authUser ? getUserInitials(authUser.name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface`}></div>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
                 </div>
                 <Button
                   variant="ghost"
@@ -269,17 +314,17 @@ const DashboardLayout = () => {
                   <Avatar className="w-10 h-10">
                     <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
                     <AvatarFallback className="bg-niawi-primary text-white">
-                      {currentUser ? getUserInitials(currentUser.name) : 'U'}
+                      {authUser ? getUserInitials(authUser.name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface`}></div>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-foreground truncate">
-                    {currentUser?.name || 'Usuario'}
+                    {authUser?.name || 'Usuario'}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">
-                    {currentUser?.email || 'Sin email'}
+                    {authUser?.email || 'Sin email'}
                   </p>
                   <Badge className={`${getRoleBadgeColor()} text-white text-xs mt-1`}>
                     {getRoleLabel()}
@@ -315,7 +360,9 @@ const DashboardLayout = () => {
             <h1 className="text-lg font-semibold text-foreground truncate px-4">
               {menuItems.find(item => isActive(item.path))?.title || 'Etres AI Nexus'}
             </h1>
-            <div className="w-9 flex-shrink-0" /> {/* Spacer for centering */}
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+            </div>
           </div>
         </div>
 

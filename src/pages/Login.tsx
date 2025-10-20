@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import NiawiLogoSvg from '@/assets/images/Niawilogo.svg';
+import { useAuth } from '@/hooks/useAuth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -13,37 +14,37 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login, currentUser } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Obtener credenciales desde variables de entorno
-    const validEmail = import.meta.env.VITE_AUTH_EMAIL;
-    const validPassword = import.meta.env.VITE_AUTH_PASSWORD;
-
-    // Validar credenciales
-    const isValidCredentials = (
-      email === validEmail && 
-      password === validPassword
-    );
-
     // Simulate API call
     setTimeout(() => {
-      if (isValidCredentials) {
-        // Almacenar estado de autenticación
-        localStorage.setItem('niawi-auth', 'authenticated');
-        navigate('/dashboard');
+      console.log('Intentando login con:', email, password);
+      const result = login(email, password);
+      console.log('Resultado del login:', result);
+      
+      if (result.success && result.user) {
+        console.log('Login exitoso, redirigiendo...');
+        // Determinar la ruta de redirección según el tipo de usuario
+        if (result.user.accessType === 'automations_only') {
+          navigate('/dashboard/automations');
+        } else {
+          navigate('/dashboard');
+        }
       } else {
+        console.log('Login fallido:', result.message);
         // Mostrar error de credenciales inválidas
-        alert('Credenciales incorrectas. Acceso denegado.');
+        alert(result.message || 'Credenciales incorrectas. Acceso denegado.');
       }
       setIsLoading(false);
     }, 1500);
   };
 
   return (
-    <div className="min-h-screen bg-niawi-bg flex items-center justify-center p-4">
+    <div className="min-h-screen gradient-primary flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         {/* Logo and Header */}
         <div className="text-center">

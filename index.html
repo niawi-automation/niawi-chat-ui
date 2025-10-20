@@ -1,9 +1,32 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Copiloto Niawi - Niawi Tech</title>
+    
+    <!-- Theme initialization script - prevents flash of wrong theme -->
+    <script>
+      (function() {
+        try {
+          const storedTheme = localStorage.getItem('niawi-theme') || 'system';
+          let theme = storedTheme;
+          
+          // Si el tema es 'system', detectar preferencia del sistema
+          if (theme === 'system') {
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = systemPrefersDark ? 'dark' : 'light';
+          }
+          
+          document.documentElement.classList.remove('light', 'dark');
+          document.documentElement.classList.add(theme);
+        } catch (e) {
+          console.error('Error loading theme:', e);
+          // Fallback a dark mode en caso de error
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <meta name="description" content="Copiloto inteligente para análisis de datos y recomendaciones estratégicas empresariales - Niawi Tech" />
     <meta name="author" content="Niawi Tech" />
 

@@ -677,7 +677,7 @@ const Chat = () => {
   };
 
   return (
-    <div className="page-container">
+    <div className="page-container gradient-chat">
       {/* Header con selector de agente */}
       <div className="flex-shrink-0 p-4 pb-0 sm:p-6">
         <AgentSelector />
@@ -693,18 +693,19 @@ const Chat = () => {
               onDragOver={(e) => { e.preventDefault(); }}
               onDrop={handleDrop}
             >
-              {messages.map((msg) => (
+              {messages.map((msg, index) => (
                 <div
                   key={msg.id}
-                  className={`flex gap-4 animate-fade-in ${
+                  className={`flex gap-4 animate-slide-in-up ${
                     msg.type === 'user' ? 'justify-end' : 'justify-start'
                   }`}
+                  style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   {msg.type === 'assistant' && selectedAgent && (
                     <Avatar className={`w-8 h-8 ${selectedAgent.bgColor} flex-shrink-0 mt-1`}>
                       <AvatarFallback className={`${selectedAgent.color} ${selectedAgent.bgColor} border-0`}>
                         {msg.isLoading ? (
-                          <Brain className="w-4 h-4 animate-pulse" />
+                          <Brain className="w-4 h-4 animate-pulse-slow" />
                         ) : (
                           <selectedAgent.icon className="w-4 h-4" />
                         )}
@@ -785,8 +786,9 @@ const Chat = () => {
                       key={index}
                       variant="outline"
                       onClick={() => handleSuggestionClick(suggestion)}
-                      className="text-left h-auto p-4 border-niawi-border bg-niawi-border/20 hover:bg-niawi-border/40 hover:scale-[1.02] text-sm justify-start transition-all duration-200 shadow-sm hover:shadow-lg"
+                      className="text-left h-auto p-4 border-niawi-border bg-niawi-border/20 hover:bg-niawi-border/40 hover:scale-[1.05] text-sm justify-start transition-all duration-300 shadow-sm hover:shadow-xl hover:shadow-niawi-primary/10 hover:border-niawi-primary/30"
                       disabled={isLoading}
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <Zap className="w-4 h-4 mr-3 text-niawi-accent flex-shrink-0" />
                       <span className="truncate">{suggestion}</span>
@@ -862,10 +864,10 @@ const Chat = () => {
                   type="submit"
                   size="sm"
                   disabled={(message.trim().length === 0 && attachments.length === 0) || isLoading || !selectedAgent}
-                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white h-[44px] px-4"
+                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white h-[44px] px-4 hover:shadow-lg hover:shadow-niawi-primary/30 transition-all duration-300"
                 >
                   {isLoading ? (
-                    <Brain className="w-4 h-4 animate-pulse" />
+                    <Brain className="w-4 h-4 animate-pulse-slow" />
                   ) : (
                     <Send className="w-4 h-4" />
                   )}

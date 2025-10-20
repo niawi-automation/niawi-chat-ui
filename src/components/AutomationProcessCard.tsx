@@ -208,7 +208,9 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
             <Clock className="w-4 h-4 text-niawi-warning animate-spin" />
             <span className="text-sm text-niawi-warning">Procesando archivo...</span>
           </div>
-          <Progress value={undefined} className="h-2" />
+          <Progress value={undefined} className="h-2 bg-niawi-border/30">
+            <div className="h-full w-full bg-gradient-to-r from-niawi-primary via-niawi-secondary to-niawi-accent animate-shimmer"></div>
+          </Progress>
         </div>
       );
     }
@@ -217,7 +219,7 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
       return (
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-niawi-accent" />
+            <CheckCircle className="w-4 h-4 text-niawi-accent animate-bounce-slow" />
             <span className="text-sm text-niawi-accent">Procesamiento completado</span>
           </div>
           
@@ -231,7 +233,7 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
                 <Button
                   onClick={handleDownload}
                   size="sm"
-                  className="w-full bg-niawi-accent hover:bg-niawi-accent/90"
+                  className="w-full bg-niawi-accent hover:bg-niawi-accent/90 hover:shadow-lg hover:shadow-niawi-accent/30 transition-all duration-300"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Descargar Archivo
@@ -247,7 +249,7 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
   };
 
   return (
-    <Card className={`bg-niawi-surface border-niawi-border hover-lift ${config.borderColor}`}>
+    <Card className={`bg-niawi-surface border-niawi-border hover-lift animate-slide-in-up ${config.borderColor}`}>
       <CardHeader className="pb-3">
         <div className="flex items-center gap-3">
           <div className={`w-12 h-12 rounded-xl ${config.color} flex items-center justify-center`}>
@@ -267,10 +269,10 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-niawi-primary/10 ${
             state.selectedFile
               ? 'border-niawi-accent bg-niawi-accent/5'
-              : 'border-niawi-border hover:border-niawi-primary/50'
+              : 'border-niawi-border hover:border-niawi-primary/50 hover:bg-niawi-primary/5'
           }`}
         >
           {state.selectedFile ? (

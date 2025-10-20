@@ -58,28 +58,105 @@
     --sidebar-accent-foreground: 220 10% 95%;
     --sidebar-border: 220 23% 18%;
     --sidebar-ring: 217 91% 60%;
+
+    /* Gradient Variables - Default (Dark theme) */
+    --gradient-primary: linear-gradient(to bottom, #050509, #0a0f25, #11183e);
+    --gradient-chat: linear-gradient(135deg, #0a0a0f 0%, #0b1130 50%, #0a0f25 100%);
+    --gradient-recommendations: linear-gradient(to bottom right, #050509, #0d1128, #0f1840);
+    --gradient-automations: linear-gradient(to bottom, #0a0a0f, #0e1235, #0a1028);
+    --gradient-agents: linear-gradient(135deg, #050509 0%, #0a1230 100%);
+    --gradient-accent: linear-gradient(135deg, #2563EB 0%, #8b5cf6 100%);
+    --gradient-shimmer: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
+    --background: 210 17% 6%;
+    --foreground: 213 17% 84%;
+    --card: 210 17% 9%;
+    --card-foreground: 213 17% 84%;
+    --popover: 210 17% 9%;
+    --popover-foreground: 213 17% 84%;
+    --primary: 217 91% 59%;
+    --primary-foreground: 222 84% 4.9%;
+    --secondary: 217 32% 17%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 217 32% 17%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 217 32% 17%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --border: 217 32% 17%;
+    --input: 217 32% 17%;
+    --ring: 212 92% 64%;
+
+    /* Niawi Brand Colors - Dark theme */
+    --niawi-bg: 210 17% 6%;
+    --niawi-surface: 210 17% 9%;
+    --niawi-border: 217 32% 17%;
+    --niawi-primary: 217 91% 59%;
+    --niawi-secondary: 189 94% 43%;
+    --niawi-accent: 158 64% 52%;
+    --niawi-warning: 43 96% 56%;
+    --niawi-danger: 0 84% 60%;
+
+    /* Dark theme gradients - Blue tones */
+    --gradient-primary: linear-gradient(to bottom, #050509, #0a0f25, #11183e);
+    --gradient-chat: linear-gradient(135deg, #0a0a0f 0%, #0b1130 50%, #0a0f25 100%);
+    --gradient-recommendations: linear-gradient(to bottom right, #050509, #0d1128, #0f1840);
+    --gradient-automations: linear-gradient(to bottom, #0a0a0f, #0e1235, #0a1028);
+    --gradient-agents: linear-gradient(135deg, #050509 0%, #0a1230 100%);
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 217 91% 59%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 59%;
+    
+    /* Niawi Brand Colors - Light */
+    --niawi-bg: 0 0% 98%;
+    --niawi-surface: 0 0% 100%;
+    --niawi-border: 214.3 31.8% 91.4%;
+    --niawi-primary: 217 91% 59%;
+    --niawi-secondary: 189 94% 43%;
+    --niawi-accent: 158 64% 52%;
+    --niawi-warning: 43 96% 56%;
+    --niawi-danger: 0 84% 60%;
+    
+    /* Sidebar Variables - Light */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-primary: 217 91% 59%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 210 40% 96.1%;
+    --sidebar-accent-foreground: 222.2 84% 4.9%;
+    --sidebar-border: 214.3 31.8% 91.4%;
+    --sidebar-ring: 217 91% 59%;
+    
+    /* Light theme gradients - soft blue/purple */
+    --gradient-primary: linear-gradient(to bottom, #f0f4ff, #e0e7ff, #dbeafe);
+    --gradient-chat: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #dbeafe 100%);
+    --gradient-recommendations: linear-gradient(to bottom right, #faf5ff, #e0e7ff, #dbeafe);
+    --gradient-automations: linear-gradient(to bottom, #f8fafc, #e0e7ff, #ede9fe);
+    --gradient-agents: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
+    --gradient-accent: linear-gradient(135deg, #2563EB 0%, #8b5cf6 100%);
+    --gradient-shimmer: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
   }
 
   * {
@@ -87,7 +164,9 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply text-foreground font-sans antialiased;
+    background: var(--gradient-primary) !important;
+    min-height: 100vh;
   }
 
   /* Scrollbar styling */
@@ -99,13 +178,24 @@
     background: transparent;
   }
 
-  ::-webkit-scrollbar-thumb {
+  /* Dark mode scrollbar */
+  .dark ::-webkit-scrollbar-thumb {
     background: #374151;
     border-radius: 3px;
   }
 
-  ::-webkit-scrollbar-thumb:hover {
+  .dark ::-webkit-scrollbar-thumb:hover {
     background: #4b5563;
+  }
+
+  /* Light mode scrollbar */
+  .light ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .light ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
   }
 }
 
@@ -119,13 +209,61 @@
     @apply bg-gradient-to-r from-niawi-primary to-niawi-accent bg-clip-text text-transparent;
   }
 
+  /* Page-specific gradients */
+  .gradient-primary {
+    background: var(--gradient-primary) !important;
+  }
+
+  .gradient-dashboard {
+    background: var(--gradient-primary) !important;
+  }
+
+  .gradient-chat {
+    background: var(--gradient-chat) !important;
+  }
+
+  .gradient-recommendations {
+    background: var(--gradient-recommendations) !important;
+  }
+
+  .gradient-automations {
+    background: var(--gradient-automations) !important;
+  }
+
+  .gradient-agents {
+    background: var(--gradient-agents) !important;
+  }
+  
+  /* Force gradient application */
+  .page-container {
+    background: var(--gradient-primary) !important;
+    min-height: 100vh;
+  }
+
   /* Enhanced hover effects */
   .hover-lift {
-    @apply transition-transform duration-200 hover:scale-[1.02] hover:shadow-lg;
+    @apply transition-all duration-300 hover:scale-[1.02] hover:shadow-lg;
   }
 
   .hover-glow {
     @apply transition-all duration-300 hover:shadow-lg hover:shadow-niawi-primary/20;
+  }
+
+  .hover-scale {
+    transition: transform 0.2s ease-out;
+  }
+
+  .hover-scale:hover {
+    transform: scale(1.02);
+  }
+
+  .hover-glow-card {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glow-card:hover {
+    box-shadow: 0 8px 30px rgba(37, 99, 235, 0.15);
+    border-color: rgba(37, 99, 235, 0.3);
   }
 
   /* Glass morphism effect */
@@ -159,6 +297,18 @@
     100% { background-position: -200% 0; }
   }
 
+  /* Shimmer effect */
+  .shimmer {
+    background: var(--gradient-shimmer);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
   /* Status indicators */
   .status-online {
     @apply bg-niawi-accent shadow-lg shadow-niawi-accent/30;
@@ -171,17 +321,39 @@
   .status-error {
     @apply bg-niawi-danger shadow-lg shadow-niawi-danger/30;
   }
+
+  /* Card enhancements */
+  .card-enhanced {
+    @apply transition-all duration-300 hover:shadow-xl hover:shadow-niawi-primary/10 hover:border-niawi-primary/30;
+  }
+
+  /* Button enhancements */
+  .btn-enhanced {
+    @apply transition-all duration-300 active:scale-95 hover:shadow-lg;
+  }
+
+  /* Input enhancements */
+  .input-enhanced {
+    @apply transition-all duration-300 focus:ring-2 focus:ring-niawi-primary/50 focus:border-niawi-primary;
+  }
 }
 
 @layer utilities {
-  .glass-effect {
+  /* Glass morphism effect - theme-aware */
+  .dark .glass-effect {
     backdrop-filter: blur(12px);
     background: rgba(26, 31, 46, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
+  .light .glass-effect {
+    backdrop-filter: blur(12px);
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
   .text-gradient {
-    background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+    background: var(--gradient-accent);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -264,6 +436,32 @@
   .sidebar-transition {
     transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  
+  /* Sidebar collapse animation */
+  .sidebar-collapsed {
+    transform: translateX(-100%);
+  }
+  
+  .sidebar-expanded {
+    transform: translateX(0);
+  }
+  
+  /* Smooth theme transitions */
+  body,
+  .page-container,
+  .gradient-dashboard,
+  .gradient-chat,
+  .gradient-recommendations,
+  .gradient-automations,
+  .gradient-agents,
+  .gradient-primary {
+    transition: background 0.3s ease, background-color 0.3s ease;
+  }
+
+  /* Keep for other elements */
+  button, a, input, textarea, select {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
 
   /* Enhanced scrollbar para mensajes largos */
   .chat-messages::-webkit-scrollbar-thumb {
@@ -279,5 +477,50 @@
       hsl(var(--niawi-primary) / 0.5) 0%, 
       hsl(var(--niawi-primary) / 0.7) 100%
     );
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .hover-lift,
+    .hover-glow,
+    .hover-scale,
+    .hover-glow-card,
+    .card-enhanced,
+    .btn-enhanced,
+    .input-enhanced,
+    .animate-float,
+    .loading-pulse,
+    .shimmer {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    /* Reduce animation delays on mobile for better performance */
+    .animate-slide-in-up,
+    .animate-slide-in-right,
+    .animate-slide-in-left {
+      animation-delay: 0s !important;
+    }
+    
+    /* Optimize hover effects for touch */
+    .hover-lift:hover,
+    .hover-scale:hover {
+      transform: scale(1.01);
+    }
+    
+    /* Better touch targets */
+    .touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    /* Improve scrolling performance */
+    .scroll-smooth {
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 }

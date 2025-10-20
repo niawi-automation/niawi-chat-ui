@@ -9,7 +9,7 @@ export default function Automations() {
   const isActive = (path: string) => location.pathname.endsWith(path);
 
   return (
-    <div className="page-container">
+    <div className="page-container gradient-automations">
       <div className="page-content">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
           <div>
