@@ -7,6 +7,7 @@ import { AutomationProcessCard } from '@/components/AutomationProcessCard';
 import PackingListResultsTable from '@/components/PackingListResultsTable';
 import { ProcessResults } from '@/types/automations';
 import { exportPackingListToXlsx } from '@/lib/exportExcel';
+import { transformPackingListData } from '@/utils/packingListTransform';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const PackingListProcess: React.FC = () => {
@@ -25,6 +26,7 @@ const PackingListProcess: React.FC = () => {
   }, []);
 
   const handleResultsUpdate = (results: ProcessResults) => {
+    console.log('📦 Resultados recibidos en PackingListProcess:', results);
     setCurrentResults(results);
     setIsWaiting(false);
     if (timerRef.current) {
@@ -34,11 +36,22 @@ const PackingListProcess: React.FC = () => {
     
     // Descarga automática del Excel cuando se reciben los datos
     if (results.data && results.data.length > 0) {
+      console.log('📦 Iniciando descarga automática con', results.data.length, 'registros');
+      
+      // Transformar los datos antes de la descarga automática
+      const transformedData = transformPackingListData(results.data);
+      console.log('📦 Datos transformados para descarga automática:', transformedData.length, 'registros');
+      
       setTimeout(() => {
-        exportPackingListToXlsx(results.data, 'PACKING_LIST_procesado.xlsx');
-        // Opcional: mostrar notificación de descarga automática
-        console.log('📥 Descarga automática de Packing List iniciada');
-      }, 500); // Pequeño delay para asegurar que la UI se actualice primero
+        try {
+          exportPackingListToXlsx(transformedData, 'PACKING_LIST_procesado.xlsx');
+          console.log('📥 Descarga automática de Packing List iniciada exitosamente');
+        } catch (error) {
+          console.error('❌ Error en descarga automática:', error);
+        }
+      }, 1500); // Aumentar delay para asegurar que la transformación se complete
+    } else {
+      console.warn('⚠️ No hay datos para descarga automática');
     }
   };
 

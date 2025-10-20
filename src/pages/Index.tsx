@@ -74,7 +74,7 @@ const Index = () => {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           {stats.map((stat, index) => (
-            <Card key={index} className="bg-niawi-surface border-niawi-border hover-lift animate-slide-in-up" style={{ animationDelay: `${index * 0.1}s` }}>
+            <Card key={index} className="bg-niawi-surface/95 backdrop-blur-sm border-niawi-border hover-lift animate-slide-in-up shadow-md" style={{ animationDelay: `${index * 0.1}s` }}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -96,7 +96,7 @@ const Index = () => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           {/* Revenue Chart */}
-          <Card className="bg-niawi-surface border-niawi-border animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
+          <Card className="bg-niawi-surface/95 backdrop-blur-sm border-niawi-border animate-slide-in-up shadow-md" style={{ animationDelay: '0.4s' }}>
             <CardHeader>
               <CardTitle className="text-foreground">Ingresos por Mes</CardTitle>
               <CardDescription>Comparación últimos 6 meses</CardDescription>
@@ -112,7 +112,7 @@ const Index = () => {
           </Card>
 
           {/* Conversion Chart */}
-          <Card className="bg-niawi-surface border-niawi-border animate-slide-in-up" style={{ animationDelay: '0.5s' }}>
+          <Card className="bg-niawi-surface/95 backdrop-blur-sm border-niawi-border animate-slide-in-up shadow-md" style={{ animationDelay: '0.5s' }}>
             <CardHeader>
               <CardTitle className="text-foreground">Conversiones</CardTitle>
               <CardDescription>Embudo de ventas</CardDescription>
@@ -131,7 +131,7 @@ const Index = () => {
         {/* Recent Activity & Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Activity */}
-          <Card className="bg-niawi-surface border-niawi-border animate-slide-in-up" style={{ animationDelay: '0.6s' }}>
+          <Card className="bg-niawi-surface/95 backdrop-blur-sm border-niawi-border animate-slide-in-up shadow-md" style={{ animationDelay: '0.6s' }}>
             <CardHeader>
               <CardTitle className="text-foreground">Actividad Reciente</CardTitle>
               <CardDescription>Últimas acciones del sistema</CardDescription>
@@ -154,7 +154,7 @@ const Index = () => {
           </Card>
 
           {/* System Alerts */}
-          <Card className="bg-niawi-surface border-niawi-border">
+          <Card className="bg-niawi-surface/95 backdrop-blur-sm border-niawi-border shadow-md">
             <CardHeader>
               <CardTitle className="text-foreground">Alertas del Sistema</CardTitle>
               <CardDescription>Notificaciones importantes</CardDescription>

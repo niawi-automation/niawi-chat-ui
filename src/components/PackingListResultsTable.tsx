@@ -3,6 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { exportPackingListToXlsx } from '@/lib/exportExcel';
+import { transformPackingListData } from '@/utils/packingListTransform';
 
 interface PackingListResultsTableProps {
   data: Array<Record<string, any>>;
@@ -69,96 +70,7 @@ const PACKING_LIST_COLUMN_NAMES: Record<string, string> = {
   'ShippedQty': 'Shipped Qty'
 };
 
-// Función para transformar datos del webhook a formato de tabla
-const transformPackingListData = (rawData: Array<Record<string, any>>): Array<Record<string, any>> => {
-  const flattenedData: Array<Record<string, any>> = [];
-  
-  rawData.forEach((item) => {
-    if (!item || typeof item !== 'object') return;
-    
-    // Extraer datos del nivel principal
-    const {
-      buyerName,
-      factoryName,
-      userName,
-      buyerERPCode,
-      factoryERPCode,
-      buyerPONumber,
-      PONumberEDI,
-      packs
-    } = item;
-    
-    // Procesar cada pack
-    if (Array.isArray(packs)) {
-      packs.forEach((pack) => {
-        if (!pack || typeof pack !== 'object') return;
-        
-        const {
-          destinationCode,
-          style,
-          DC,
-          Address,
-          City,
-          PostalCode,
-          State,
-          Country,
-          CartonsQty,
-          CartonLength,
-          CartonWidth,
-          CartonHeight,
-          CartonNetWg,
-          CartonGrossWg,
-          nroPacking,
-          sizeDetail
-        } = pack;
-        
-        // Procesar cada sizeDetail
-        if (Array.isArray(sizeDetail)) {
-          sizeDetail.forEach((sizeItem) => {
-            if (!sizeItem || typeof sizeItem !== 'object') return;
-            
-            const {
-              ColorName,
-              Size,
-              ShippedQty
-            } = sizeItem;
-            
-            // Crear registro aplanado
-            flattenedData.push({
-              BuyerName: buyerName,
-              FactoryName: factoryName,
-              UserName: userName,
-              BuyerERPCode: buyerERPCode,
-              FactoryERPCode: factoryERPCode,
-              BuyerPO: buyerPONumber,
-              PONumberEDI: PONumberEDI,
-              DestinationCode: destinationCode,
-              Style: style,
-              DC: DC,
-              Address: Address,
-              City: City,
-              State: State,
-              PostalCode: PostalCode,
-              Country: Country,
-              CartonsQty: CartonsQty,
-              CartonLength: CartonLength,
-              CartonWidth: CartonWidth,
-              CartonHeight: CartonHeight,
-              CartonNetWg: CartonNetWg,
-              CartonGrossWg: CartonGrossWg,
-              NroPacking: nroPacking,
-              ColorName: ColorName,
-              Size: Size,
-              ShippedQty: ShippedQty
-            });
-          });
-        }
-      });
-    }
-  });
-  
-  return flattenedData;
-};
+// Usar la función de transformación compartida desde utils/packingListTransform.ts
 
 export const PackingListResultsTable: React.FC<PackingListResultsTableProps> = ({
   data,
@@ -210,11 +122,19 @@ export const PackingListResultsTable: React.FC<PackingListResultsTableProps> = (
   }
 
   const handleExport = () => {
+    console.log('📊 Iniciando exportación manual desde tabla');
+    console.log('📊 Datos filtrados para exportar:', filteredData.length, 'registros');
+    
     if (onExport) {
       onExport();
     } else {
       // Usar los datos filtrados que ya están siendo mostrados en la tabla
-      exportPackingListToXlsx(filteredData, 'PACKING_LIST_procesado.xlsx');
+      try {
+        exportPackingListToXlsx(filteredData, 'PACKING_LIST_procesado.xlsx');
+        console.log('✅ Exportación manual completada exitosamente');
+      } catch (error) {
+        console.error('❌ Error en exportación manual:', error);
+      }
     }
   };
 

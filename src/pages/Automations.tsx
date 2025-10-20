@@ -22,7 +22,7 @@ export default function Automations() {
         </div>
 
         <div className="w-full overflow-x-auto">
-          <div className="inline-flex rounded-lg border border-niawi-border bg-niawi-surface p-1">
+          <div className="inline-flex rounded-lg border border-niawi-border bg-niawi-surface/90 backdrop-blur-sm p-1 shadow-md">
             <button
               className={`px-4 py-2 rounded-md text-sm ${isActive('dashboard') ? 'bg-niawi-primary text-white' : 'text-foreground'}`}
               onClick={() => navigate('dashboard')}

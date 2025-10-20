@@ -182,10 +182,10 @@ const DashboardLayout = () => {
 
   return (
     <div className="min-h-screen max-h-screen gradient-dashboard flex overflow-hidden">
-      {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-80'} w-80 bg-niawi-surface border-r border-niawi-border transform ${
+      {/* Sidebar - Glass Effect */}
+      <div className={`fixed inset-y-0 left-0 z-50 ${sidebarCollapsed ? 'lg:w-16' : 'lg:w-80'} w-80 bg-niawi-surface/95 backdrop-blur-md border-r border-niawi-border/50 transform ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      } sidebar-transition lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0 transition-all duration-300 ease-in-out`}>
+      } sidebar-transition lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none`}>
         <div className="flex flex-col h-full overflow-hidden">
           {/* Header */}
           <div className={`flex items-center ${sidebarCollapsed ? 'justify-center px-3' : 'justify-between px-6'} border-b border-niawi-border flex-shrink-0 transition-all duration-300`}>
@@ -250,11 +250,12 @@ const DashboardLayout = () => {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`group flex items-center ${sidebarCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'} rounded-xl transition-all duration-300 hover-scale relative ${
+                  className={`group flex items-center ${sidebarCollapsed ? 'px-2 py-3 justify-center' : 'px-4 py-3'} rounded-xl relative ${
                     isActive(item.path)
-                      ? 'bg-niawi-primary text-white shadow-lg hover:shadow-xl hover:shadow-niawi-primary/30'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 hover:shadow-md'
+                      ? 'bg-niawi-primary text-white shadow-lg hover:shadow-xl hover:shadow-niawi-primary/40 animate-glow-pulse'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-niawi-border/30 hover:backdrop-blur-sm hover:shadow-md'
                   }`}
+                  style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', transform: 'translateZ(0)' }}
                   title={sidebarCollapsed ? item.title : undefined}
                 >
                   <div className="relative">
@@ -346,8 +347,8 @@ const DashboardLayout = () => {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        {/* Mobile header */}
-        <div className="lg:hidden bg-niawi-surface border-b border-niawi-border px-4 py-4 flex-shrink-0 shadow-sm">
+        {/* Mobile header - Glass */}
+        <div className="lg:hidden bg-niawi-surface/95 backdrop-blur-md border-b border-niawi-border/50 px-4 py-4 flex-shrink-0 shadow-lg">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { validateCredentials, isEnvironmentConfigured } from '@/utils/authSecurity';
 
 // Definir tipos de usuarios
 export interface UserAuth {
@@ -17,6 +18,14 @@ export const useAuth = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Verificar configuración de entorno al cargar
+    const isConfigured = isEnvironmentConfigured();
+    if (!isConfigured) {
+      console.warn('⚠️ Variables de entorno de autenticación no configuradas. Usando valores por defecto.');
+    } else {
+      console.log('✅ Variables de entorno de autenticación configuradas correctamente.');
+    }
+
     // Verificar si el usuario está autenticado
     const authData = localStorage.getItem('niawi-auth');
     if (authData) {
@@ -25,10 +34,12 @@ export const useAuth = () => {
         if (userData.userId && userData.email) {
           setIsAuthenticated(true);
           setCurrentUser(userData);
+          console.log('👤 Usuario cargado desde localStorage:', userData.email);
         } else {
           localStorage.removeItem('niawi-auth');
         }
       } catch (error) {
+        console.error('❌ Error al cargar usuario desde localStorage:', error);
         localStorage.removeItem('niawi-auth');
       }
     }
@@ -36,50 +47,14 @@ export const useAuth = () => {
   }, []);
 
   const login = (email: string, password: string): { success: boolean; message?: string; user?: UserAuth } => {
-    console.log('Iniciando proceso de login...');
-    console.log('Email recibido:', email);
-    console.log('Password recibido:', password);
-    console.log('Variables de entorno:', {
-      VITE_AUTH_EMAIL: import.meta.env.VITE_AUTH_EMAIL,
-      VITE_AUTH_PASSWORD: import.meta.env.VITE_AUTH_PASSWORD
-    });
-
-    // Credenciales válidas
-    const validCredentials = [
-      { 
-        email: import.meta.env.VITE_AUTH_EMAIL || 'admin@niawi.tech', 
-        password: import.meta.env.VITE_AUTH_PASSWORD || 'd3mo.Niawi',
-        user: {
-          id: '1',
-          email: import.meta.env.VITE_AUTH_EMAIL || 'admin@niawi.tech',
-          name: 'Super Administrador',
-          role: 'super_admin' as const,
-          accessType: 'full' as const
-        }
-      },
-      { 
-        email: 'bot@wts.com.pe', 
-        password: 'WTS%2025*',
-        user: {
-          id: '2',
-          email: 'bot@wts.com.pe',
-          name: 'Usuario Bot WTS',
-          role: 'bot_user' as const,
-          accessType: 'automations_only' as const
-        }
-      }
-    ];
-
-    console.log('Credenciales válidas configuradas:', validCredentials.map(c => ({ email: c.email, password: c.password.substring(0, 3) + '***' })));
-
-    const validCredential = validCredentials.find(
-      cred => cred.email === email && cred.password === password
-    );
-
-    console.log('Credencial encontrada:', validCredential ? 'SÍ' : 'NO');
-
+    console.log('🔐 Iniciando proceso de login para:', email);
+    
+    // Validar credenciales usando el sistema seguro
+    const validCredential = validateCredentials(email, password);
+    
     if (validCredential) {
-      console.log('Usuario válido encontrado:', validCredential.user);
+      console.log('✅ Usuario válido encontrado:', validCredential.user.email);
+      
       const authData = {
         userId: validCredential.user.id,
         email: validCredential.user.email,
@@ -88,18 +63,21 @@ export const useAuth = () => {
         accessType: validCredential.user.accessType,
         timestamp: Date.now()
       };
+      
       localStorage.setItem('niawi-auth', JSON.stringify(authData));
       setIsAuthenticated(true);
       setCurrentUser(validCredential.user);
-      console.log('Autenticación exitosa, datos guardados en localStorage');
+      
+      console.log('✅ Autenticación exitosa, datos guardados en localStorage');
       return { success: true, user: validCredential.user };
     }
     
-    console.log('Credenciales inválidas');
+    console.log('❌ Credenciales inválidas para:', email);
     return { success: false, message: 'Credenciales incorrectas. Acceso denegado.' };
   };
 
   const logout = () => {
+    console.log('👋 Cerrando sesión para:', currentUser?.email);
     localStorage.removeItem('niawi-auth');
     setIsAuthenticated(false);
     setCurrentUser(null);
@@ -120,4 +98,4 @@ export const useAuth = () => {
     logout,
     requireAuth
   };
-}; 
+};

@@ -22,3 +22,48 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ===========================================
+# ARCHIVOS DE ENTORNO Y SEGURIDAD
+# ===========================================
+# Variables de entorno (NUNCA subir al repositorio)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Archivos de configuración sensibles
+config.json
+secrets.json
+credentials.json
+
+# Archivos de backup que puedan contener credenciales
+*.backup
+*.bak
+*_backup.*
+
+# ===========================================
+# ARCHIVOS TEMPORALES Y CACHE
+# ===========================================
+# Cache de dependencias
+.cache/
+.parcel-cache/
+
+# Archivos temporales del sistema
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# ===========================================
+# ARCHIVOS DE DESARROLLO
+# ===========================================
+# Archivos de prueba locales
+test-data/
+mock-data/
+local-test/
+
+# Archivos de debug
+debug.log
+error.log

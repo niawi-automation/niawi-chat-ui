@@ -233,7 +233,7 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
                 <Button
                   onClick={handleDownload}
                   size="sm"
-                  className="w-full bg-niawi-accent hover:bg-niawi-accent/90 hover:shadow-lg hover:shadow-niawi-accent/30 transition-all duration-300"
+                  className="w-full bg-niawi-accent hover:bg-niawi-accent/90 btn-magnetic hover:shadow-xl hover:shadow-niawi-accent/40"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Descargar Archivo
@@ -269,11 +269,12 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
         <div
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-lg p-6 text-center transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-niawi-primary/10 ${
+          className={`border-2 border-dashed rounded-xl p-6 text-center backdrop-blur-sm ${
             state.selectedFile
-              ? 'border-niawi-accent bg-niawi-accent/5'
-              : 'border-niawi-border hover:border-niawi-primary/50 hover:bg-niawi-primary/5'
+              ? 'border-niawi-accent bg-niawi-accent/10 shadow-lg shadow-niawi-accent/20'
+              : 'border-niawi-border hover:border-niawi-primary/60 hover:bg-niawi-primary/5 hover:shadow-md animate-glow-pulse'
           }`}
+          style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
         >
           {state.selectedFile ? (
             <div className="space-y-2">
@@ -319,7 +320,7 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
         {state.selectedFile && !state.isProcessing && !state.currentResults && (
           <Button
             onClick={handleProcessFile}
-            className="w-full bg-niawi-primary hover:bg-niawi-primary/90"
+            className="w-full bg-niawi-primary hover:bg-niawi-primary/90 btn-magnetic hover:shadow-xl hover:shadow-niawi-primary/40"
           >
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Procesar Archivo

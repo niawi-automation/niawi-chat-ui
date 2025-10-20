@@ -131,39 +131,69 @@ export const processFile = async (
       // Manejar si es array o objeto único
       const dataArray = Array.isArray(result) ? result : [result];
       
-      dataArray.forEach((item: any) => {
+      console.log('📦 Procesando datos de Packing List:', dataArray.length, 'elementos');
+      
+      dataArray.forEach((item: any, index: number) => {
+        console.log(`📦 Procesando elemento ${index}:`, item);
+        
         // Verificar si tiene la estructura esperada: { index, message: { role, content } }
         if (item.message?.content?.packs && Array.isArray(item.message.content.packs)) {
-          const { buyerPONumber, PONumberEDI } = item.message.content;
+          const { 
+            buyerName,
+            factoryName,
+            userName,
+            buyerERPCode,
+            factoryERPCode,
+            buyerPONumber, 
+            PONumberEDI 
+          } = item.message.content;
           
-          item.message.content.packs.forEach((pack: any) => {
+          console.log('📦 Datos principales:', { buyerName, factoryName, userName, buyerERPCode, factoryERPCode, buyerPONumber, PONumberEDI });
+          
+          item.message.content.packs.forEach((pack: any, packIndex: number) => {
+            console.log(`📦 Procesando pack ${packIndex}:`, pack);
+            
             if (pack.sizeDetail && Array.isArray(pack.sizeDetail)) {
-              pack.sizeDetail.forEach((sizeDetail: any) => {
+              pack.sizeDetail.forEach((sizeDetail: any, sizeIndex: number) => {
+                console.log(`📦 Procesando sizeDetail ${sizeIndex}:`, sizeDetail);
+                
                 const flattenedRecord: PackingListRecord = {
+                  BuyerName: buyerName || '',
+                  FactoryName: factoryName || '',
+                  UserName: userName || '',
+                  BuyerERPCode: buyerERPCode || '',
+                  FactoryERPCode: factoryERPCode || '',
                   BuyerPO: buyerPONumber || '',
                   PONumberEDI: PONumberEDI || '',
+                  DestinationCode: pack.destinationCode || '',
+                  Style: pack.style || '',
                   DC: pack.DC || '',
+                  Address: pack.Address || '',
                   City: pack.City || '',
                   State: pack.State || '',
                   PostalCode: pack.PostalCode || '',
                   Country: pack.Country || '',
-                  Style: pack.style || '',
-                  ColorName: sizeDetail.ColorName || '',
-                  Size: sizeDetail.Size || '',
-                  ShippedQty: sizeDetail.ShippedQty || 0,
                   CartonsQty: pack.CartonsQty || 0,
                   CartonLength: pack.CartonLength || 0,
                   CartonWidth: pack.CartonWidth || 0,
                   CartonHeight: pack.CartonHeight || 0,
                   CartonNetWg: pack.CartonNetWg || 0,
-                  CartonGrossWg: pack.CartonGrossWg || 0
+                  CartonGrossWg: pack.CartonGrossWg || 0,
+                  NroPacking: pack.nroPacking || 0,
+                  ColorName: sizeDetail.ColorName || '',
+                  Size: sizeDetail.Size || '',
+                  ShippedQty: sizeDetail.ShippedQty || 0
                 };
+                
+                console.log('📦 Registro aplanado creado:', flattenedRecord);
                 flattenedRecords.push(flattenedRecord);
               });
             }
           });
         }
       });
+
+      console.log('📦 Total de registros aplanados:', flattenedRecords.length);
 
       if (flattenedRecords.length > 0) {
         const wrapped: ProcessResults = {

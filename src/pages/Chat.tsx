@@ -683,9 +683,9 @@ const Chat = () => {
         <AgentSelector />
       </div>
 
-      {/* Chat Container */}
+      {/* Chat Container - Glass Premium */}
       <div className="flex-1 p-4 pt-4 sm:p-6 sm:pt-6 overflow-hidden">
-        <Card className="h-full bg-niawi-surface border-niawi-border flex flex-col overflow-hidden shadow-xl">
+        <Card className="h-full glass-premium border-niawi-border/50 flex flex-col overflow-hidden shadow-2xl">
           <CardContent className="flex-1 p-0 flex flex-col overflow-hidden">
             {/* Messages Area */}
             <div
@@ -714,13 +714,14 @@ const Chat = () => {
                   )}
                   
                   <div
-                    className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-3 transition-all duration-200 hover:shadow-lg ${
+                    className={`max-w-[85%] lg:max-w-[75%] rounded-2xl px-4 py-3 ${
                       msg.type === 'user'
-                        ? 'bg-niawi-primary text-white ml-auto shadow-lg shadow-niawi-primary/20'
-                        : `bg-niawi-border/30 text-foreground shadow-sm ${
+                        ? 'bg-niawi-primary text-white ml-auto shadow-lg shadow-niawi-primary/30 hover:shadow-xl hover:shadow-niawi-primary/40'
+                        : `backdrop-blur-sm bg-niawi-border/20 text-foreground shadow-sm hover:shadow-md ${
                             msg.hasError ? 'border border-niawi-danger/50' : ''
                           }`
                     }`}
+                    style={{ transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }}
                   >
                     {msg.hasError && (
                       <div className="flex items-center gap-2 mb-2 text-niawi-danger">
@@ -820,7 +821,7 @@ const Chat = () => {
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
                     placeholder={selectedAgent ? `Pregunta a tu ${selectedAgent.name}...` : 'Selecciona un agente primero...'}
-                    className="min-h-[44px] max-h-[120px] resize-none pr-12 bg-niawi-bg border-niawi-border focus:border-niawi-primary transition-all duration-200"
+                    className="min-h-[44px] max-h-[120px] resize-none pr-12 bg-niawi-bg/50 backdrop-blur-sm border-niawi-border focus:border-niawi-primary input-enhanced"
                     disabled={isLoading || !selectedAgent}
                     rows={1}
                   />
@@ -864,7 +865,7 @@ const Chat = () => {
                   type="submit"
                   size="sm"
                   disabled={(message.trim().length === 0 && attachments.length === 0) || isLoading || !selectedAgent}
-                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white h-[44px] px-4 hover:shadow-lg hover:shadow-niawi-primary/30 transition-all duration-300"
+                  className="bg-niawi-primary hover:bg-niawi-primary/90 text-white h-[44px] px-4 btn-magnetic hover:shadow-xl hover:shadow-niawi-primary/50"
                 >
                   {isLoading ? (
                     <Brain className="w-4 h-4 animate-pulse-slow" />
