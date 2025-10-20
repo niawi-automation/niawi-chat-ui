@@ -97,13 +97,13 @@ export interface PackingListWebhookResponse {
 }
 
 export interface PackingListContent {
-  buyerName: string;
-  factoryName: string;
-  userName: string;
-  buyerERPCode: string;
-  factoryERPCode: string;
+  buyerName: string | null;
+  factoryName: string | null;
+  userName: string | null;
+  buyerERPCode: string | null;
+  factoryERPCode: string | null;
   buyerPONumber: string;
-  PONumberEDI: string;
+  PONumberEDI: string | null;
   packs: PackingListPack[];
 }
 
@@ -134,23 +134,31 @@ export interface PackingListSizeDetail {
 
 // Registro aplanado para tabla/Excel
 export interface PackingListRecord {
+  BuyerName: string | null;
+  FactoryName: string | null;
+  UserName: string | null;
+  BuyerERPCode: string | null;
+  FactoryERPCode: string | null;
   BuyerPO: string;
-  PONumberEDI: string;
+  PONumberEDI: string | null;
+  DestinationCode: string;
+  Style: string;
   DC: string;
+  Address: string;
   City: string;
   State: string;
   PostalCode: string;
   Country: string;
-  Style: string;
-  ColorName: string;
-  Size: string;
-  ShippedQty: number;
   CartonsQty: number;
   CartonLength: number;
   CartonWidth: number;
   CartonHeight: number;
   CartonNetWg: number;
   CartonGrossWg: number;
+  NroPacking: number;
+  ColorName: string;
+  Size: string;
+  ShippedQty: number;
 }
 
 // Estado local del componente

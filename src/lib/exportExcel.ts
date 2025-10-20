@@ -25,23 +25,31 @@ export const WIP_COLUMNS: string[] = [
 
 // Columnas fijas para Packing List en el orden solicitado
 export const PACKING_LIST_COLUMNS: string[] = [
+  'BuyerName',
+  'FactoryName',
+  'UserName',
+  'BuyerERPCode',
+  'FactoryERPCode',
   'BuyerPO',
   'PONumberEDI',
+  'DestinationCode',
+  'Style',
   'DC',
+  'Address',
   'City',
   'State',
   'PostalCode',
   'Country',
-  'Style',
-  'ColorName',
-  'Size',
-  'ShippedQty',
   'CartonsQty',
   'CartonLength',
   'CartonWidth',
   'CartonHeight',
   'CartonNetWg',
-  'CartonGrossWg'
+  'CartonGrossWg',
+  'NroPacking',
+  'ColorName',
+  'Size',
+  'ShippedQty'
 ];
 
 // Mapeo de campos del webhook a columnas de exportación para WIP
@@ -69,23 +77,31 @@ const WIP_FIELD_MAPPING: Record<string, string> = {
 
 // Mapeo de campos del webhook a columnas de exportación para Packing List
 const PACKING_LIST_FIELD_MAPPING: Record<string, string> = {
+  'BuyerName': 'BuyerName',
+  'FactoryName': 'FactoryName',
+  'UserName': 'UserName',
+  'BuyerERPCode': 'BuyerERPCode',
+  'FactoryERPCode': 'FactoryERPCode',
   'BuyerPO': 'BuyerPO',
   'PONumberEDI': 'PONumberEDI',
+  'DestinationCode': 'DestinationCode',
+  'Style': 'Style',
   'DC': 'DC',
+  'Address': 'Address',
   'City': 'City',
   'State': 'State',
   'PostalCode': 'PostalCode',
   'Country': 'Country',
-  'Style': 'Style',
-  'ColorName': 'ColorName',
-  'Size': 'Size',
-  'ShippedQty': 'ShippedQty',
   'CartonsQty': 'CartonsQty',
   'CartonLength': 'CartonLength',
   'CartonWidth': 'CartonWidth',
   'CartonHeight': 'CartonHeight',
   'CartonNetWg': 'CartonNetWg',
-  'CartonGrossWg': 'CartonGrossWg'
+  'CartonGrossWg': 'CartonGrossWg',
+  'NroPacking': 'NroPacking',
+  'ColorName': 'ColorName',
+  'Size': 'Size',
+  'ShippedQty': 'ShippedQty'
 };
 
 /**

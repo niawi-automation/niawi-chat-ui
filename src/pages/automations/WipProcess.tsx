@@ -31,6 +31,15 @@ const WipProcess: React.FC = () => {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    
+    // Descarga automática del Excel cuando se reciben los datos
+    if (results.data && results.data.length > 0) {
+      setTimeout(() => {
+        exportWipToXlsx(results.data, 'WIP_procesado.xlsx');
+        // Opcional: mostrar notificación de descarga automática
+        console.log('📥 Descarga automática de WIP iniciada');
+      }, 500); // Pequeño delay para asegurar que la UI se actualice primero
+    }
   };
 
   return (

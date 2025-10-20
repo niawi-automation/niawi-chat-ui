@@ -13,54 +13,151 @@ interface PackingListResultsTableProps {
 
 // Columnas específicas para Packing List en el orden correcto
 const PACKING_LIST_TABLE_COLUMNS = [
+  'BuyerName',
+  'FactoryName',
+  'UserName',
+  'BuyerERPCode',
+  'FactoryERPCode',
   'BuyerPO',
   'PONumberEDI',
+  'DestinationCode',
+  'Style',
   'DC',
+  'Address',
   'City',
   'State',
   'PostalCode',
   'Country',
-  'Style',
-  'ColorName',
-  'Size',
-  'ShippedQty',
   'CartonsQty',
   'CartonLength',
   'CartonWidth',
   'CartonHeight',
   'CartonNetWg',
-  'CartonGrossWg'
+  'CartonGrossWg',
+  'NroPacking',
+  'ColorName',
+  'Size',
+  'ShippedQty'
 ];
 
 // Mapeo de campos a nombres de columnas más legibles
 const PACKING_LIST_COLUMN_NAMES: Record<string, string> = {
+  'BuyerName': 'Buyer Name',
+  'FactoryName': 'Factory Name',
+  'UserName': 'User Name',
+  'BuyerERPCode': 'Buyer ERP Code',
+  'FactoryERPCode': 'Factory ERP Code',
   'BuyerPO': 'Buyer PO',
   'PONumberEDI': 'PO Number EDI',
+  'DestinationCode': 'Destination Code',
+  'Style': 'Style',
   'DC': 'DC',
+  'Address': 'Address',
   'City': 'City',
   'State': 'State',
   'PostalCode': 'Postal Code',
   'Country': 'Country',
-  'Style': 'Style',
-  'ColorName': 'Color Name',
-  'Size': 'Size',
-  'ShippedQty': 'Shipped Qty',
   'CartonsQty': 'Cartons Qty',
   'CartonLength': 'Carton Length',
   'CartonWidth': 'Carton Width',
   'CartonHeight': 'Carton Height',
   'CartonNetWg': 'Carton Net Wg',
-  'CartonGrossWg': 'Carton Gross Wg'
+  'CartonGrossWg': 'Carton Gross Wg',
+  'NroPacking': 'Nro Packing',
+  'ColorName': 'Color Name',
+  'Size': 'Size',
+  'ShippedQty': 'Shipped Qty'
 };
 
 // Función para transformar datos del webhook a formato de tabla
 const transformPackingListData = (rawData: Array<Record<string, any>>): Array<Record<string, any>> => {
-  // Los datos ya vienen aplanados del servicio, solo necesitamos verificar que estén en el formato correcto
-  return rawData.filter(item => 
-    item && 
-    typeof item === 'object' && 
-    (item.BuyerPO !== undefined || item.Style !== undefined)
-  );
+  const flattenedData: Array<Record<string, any>> = [];
+  
+  rawData.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+    
+    // Extraer datos del nivel principal
+    const {
+      buyerName,
+      factoryName,
+      userName,
+      buyerERPCode,
+      factoryERPCode,
+      buyerPONumber,
+      PONumberEDI,
+      packs
+    } = item;
+    
+    // Procesar cada pack
+    if (Array.isArray(packs)) {
+      packs.forEach((pack) => {
+        if (!pack || typeof pack !== 'object') return;
+        
+        const {
+          destinationCode,
+          style,
+          DC,
+          Address,
+          City,
+          PostalCode,
+          State,
+          Country,
+          CartonsQty,
+          CartonLength,
+          CartonWidth,
+          CartonHeight,
+          CartonNetWg,
+          CartonGrossWg,
+          nroPacking,
+          sizeDetail
+        } = pack;
+        
+        // Procesar cada sizeDetail
+        if (Array.isArray(sizeDetail)) {
+          sizeDetail.forEach((sizeItem) => {
+            if (!sizeItem || typeof sizeItem !== 'object') return;
+            
+            const {
+              ColorName,
+              Size,
+              ShippedQty
+            } = sizeItem;
+            
+            // Crear registro aplanado
+            flattenedData.push({
+              BuyerName: buyerName,
+              FactoryName: factoryName,
+              UserName: userName,
+              BuyerERPCode: buyerERPCode,
+              FactoryERPCode: factoryERPCode,
+              BuyerPO: buyerPONumber,
+              PONumberEDI: PONumberEDI,
+              DestinationCode: destinationCode,
+              Style: style,
+              DC: DC,
+              Address: Address,
+              City: City,
+              State: State,
+              PostalCode: PostalCode,
+              Country: Country,
+              CartonsQty: CartonsQty,
+              CartonLength: CartonLength,
+              CartonWidth: CartonWidth,
+              CartonHeight: CartonHeight,
+              CartonNetWg: CartonNetWg,
+              CartonGrossWg: CartonGrossWg,
+              NroPacking: nroPacking,
+              ColorName: ColorName,
+              Size: Size,
+              ShippedQty: ShippedQty
+            });
+          });
+        }
+      });
+    }
+  });
+  
+  return flattenedData;
 };
 
 export const PackingListResultsTable: React.FC<PackingListResultsTableProps> = ({

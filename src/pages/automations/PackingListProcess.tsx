@@ -6,6 +6,7 @@ import { CheckCircle, Download, Clock } from 'lucide-react';
 import { AutomationProcessCard } from '@/components/AutomationProcessCard';
 import PackingListResultsTable from '@/components/PackingListResultsTable';
 import { ProcessResults } from '@/types/automations';
+import { exportPackingListToXlsx } from '@/lib/exportExcel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const PackingListProcess: React.FC = () => {
@@ -29,6 +30,15 @@ const PackingListProcess: React.FC = () => {
     if (timerRef.current) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+    
+    // Descarga automática del Excel cuando se reciben los datos
+    if (results.data && results.data.length > 0) {
+      setTimeout(() => {
+        exportPackingListToXlsx(results.data, 'PACKING_LIST_procesado.xlsx');
+        // Opcional: mostrar notificación de descarga automática
+        console.log('📥 Descarga automática de Packing List iniciada');
+      }, 500); // Pequeño delay para asegurar que la UI se actualice primero
     }
   };
 
