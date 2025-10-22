@@ -97,7 +97,7 @@ export const processFile = async (
     
     const result = await response.json();
 
-    // Caso especial para WIP: nuevo formato con records directamente
+    // Caso especial para WIP: nuevos formato con records directamente
     if (processType === 'WIP' && Array.isArray(result)) {
       // Procesar el nuevo formato WIP: [{ records: [...] }]
       const wipData = result as WipWebhookResponse[];

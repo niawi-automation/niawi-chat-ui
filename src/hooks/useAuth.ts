@@ -7,7 +7,7 @@ export interface UserAuth {
   id: string;
   email: string;
   name: string;
-  role: 'super_admin' | 'admin' | 'manager' | 'employee' | 'bot_user';
+  role: 'super_admin' | 'admin' | 'manager' | 'employee' | 'automations_user';
   accessType: 'full' | 'automations_only';
 }
 

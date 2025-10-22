@@ -30,7 +30,7 @@ export const AgentProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [currentUser, setCurrentUser] = useState<User | null>({
     id: '1',
     name: 'Super Administrador',
-    email: 'superadmin@niawi.tech',
+    email: 'admin@example.com',
     role: 'super_admin', // Cambiar para probar: 'super_admin', 'admin', 'manager', 'employee'
     companyId: 'company1',
     availableAgents: [],

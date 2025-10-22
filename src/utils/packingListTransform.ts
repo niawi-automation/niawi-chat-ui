@@ -102,3 +102,5 @@ export const transformPackingListData = (rawData: Array<Record<string, any>>): A
   console.log('✅ Transformación completada:', flattenedData.length, 'registros generados');
   return flattenedData;
 };
+
+

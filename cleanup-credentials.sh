@@ -50,3 +50,5 @@ echo "   1. Configurar variables de entorno en .env.local"
 echo "   2. Cambiar contraseñas por defecto"
 echo "   3. Notificar al equipo sobre los cambios"
 echo "   4. Verificar que GitGuardian ya no detecte problemas"
+
+
