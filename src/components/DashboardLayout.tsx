@@ -187,10 +187,10 @@ const DashboardLayout = () => {
         sidebarOpen ? 'translate-x-0' : '-translate-x-full'
       } sidebar-transition lg:translate-x-0 lg:static lg:inset-0 flex-shrink-0 transition-all duration-300 ease-in-out shadow-2xl lg:shadow-none`}>
         <div className="flex flex-col h-full overflow-hidden">
-          {/* Header */}
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center px-3' : 'justify-between px-6'} border-b border-niawi-border flex-shrink-0 transition-all duration-300`}>
+          {/* Header - User Profile */}
+          <div className={`border-b border-niawi-border flex-shrink-0 transition-all duration-300 ${sidebarCollapsed ? 'px-3 py-4' : 'p-6 pb-5'}`}>
             {sidebarCollapsed ? (
-              <div className="flex flex-col items-center gap-2 py-4">
+              <div className="flex flex-col items-center gap-3">
                 {/* Botón expandir cuando está colapsado */}
                 <Button
                   variant="ghost"
@@ -202,43 +202,65 @@ const DashboardLayout = () => {
                   <Menu className="w-4 h-4" />
                 </Button>
                 
-                <div className="w-8 h-8 bg-niawi-primary rounded-lg flex items-center justify-center hover:bg-niawi-primary/90 transition-colors">
-                  <Bot className="w-4 h-4 text-white" />
+                <div className="relative">
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
+                    <AvatarFallback className="bg-niawi-primary text-white">
+                      {authUser ? getUserInitials(authUser.name) : 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
                 </div>
-                
-                {/* Theme Toggle compacto */}
-                <ThemeToggle className="hidden lg:flex scale-75" />
               </div>
             ) : (
-              <>
-                <NiawiLogo size="md" />
-                <div className="flex items-center gap-2">
-                  {/* Theme Toggle - Solo en desktop */}
-                  <ThemeToggle className="hidden lg:flex" />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-shrink-0">
+                      <Avatar className="w-12 h-12">
+                        <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
+                        <AvatarFallback className="bg-niawi-primary text-white text-base">
+                          {authUser ? getUserInitials(authUser.name) : 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-base font-semibold text-foreground truncate">
+                        {authUser?.name || 'Usuario'}
+                      </p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {authUser?.email || 'Sin email'}
+                      </p>
+                    </div>
+                  </div>
                   
                   {/* Botón colapsar desktop */}
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setSidebarCollapsed(true)}
-                    className="hidden lg:flex text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200"
+                    className="hidden lg:flex text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200 flex-shrink-0"
                     title="Colapsar sidebar"
                   >
                     <Menu className="w-4 h-4" />
                   </Button>
+                  
+                  {/* Botón cerrar móvil */}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSidebarOpen(false)}
+                    className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200 flex-shrink-0"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </Button>
                 </div>
-              </>
+                <Badge className={`${getRoleBadgeColor()} text-white text-xs`}>
+                  {getRoleLabel()}
+                </Badge>
+              </div>
             )}
-            
-            {/* Botón cerrar móvil - siempre visible en móvil */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-muted-foreground hover:text-foreground hover:bg-niawi-border/50 transition-all duration-200"
-            >
-              <Menu className="w-5 h-5" />
-            </Button>
           </div>
 
           {/* Navigation */}
@@ -286,58 +308,34 @@ const DashboardLayout = () => {
             })}
           </nav>
 
-          {/* User Profile */}
+          {/* Footer - Theme Toggle & Logout */}
           <div className={`${sidebarCollapsed ? 'p-3' : 'p-6'} border-t border-niawi-border flex-shrink-0 transition-all duration-300`}>
             {sidebarCollapsed ? (
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
-                    <AvatarFallback className="bg-niawi-primary text-white">
-                      {authUser ? getUserInitials(authUser.name) : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
-                </div>
+              <div className="flex flex-col items-center gap-3">
+                <ThemeToggle className="scale-90" />
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleLogout}
-                  className="text-muted-foreground hover:text-niawi-danger"
+                  className="text-muted-foreground hover:text-niawi-danger transition-colors"
                   title="Cerrar sesión"
                 >
                   <LogOut className="w-4 h-4" />
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-niawi-border/30">
-                <div className="relative flex-shrink-0">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src="/placeholder-avatar.jpg" alt="Usuario" />
-                    <AvatarFallback className="bg-niawi-primary text-white">
-                      {authUser ? getUserInitials(authUser.name) : 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className={`absolute -bottom-1 -right-1 w-4 h-4 ${getRoleBadgeColor()} rounded-full border-2 border-niawi-surface ${authUser?.role === 'super_admin' ? 'animate-pulse-slow' : ''}`}></div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {authUser?.name || 'Usuario'}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {authUser?.email || 'Sin email'}
-                  </p>
-                  <Badge className={`${getRoleBadgeColor()} text-white text-xs mt-1`}>
-                    {getRoleLabel()}
-                  </Badge>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-niawi-border/20 hover:bg-niawi-border/30 transition-colors">
+                  <span className="text-sm text-muted-foreground">Tema</span>
+                  <ThemeToggle />
                 </div>
                 <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   onClick={handleLogout}
-                  className="text-muted-foreground hover:text-niawi-danger flex-shrink-0"
+                  className="w-full border-niawi-border hover:bg-niawi-danger/10 hover:border-niawi-danger hover:text-niawi-danger transition-all"
                 >
-                  <LogOut className="w-4 h-4" />
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Cerrar sesión
                 </Button>
               </div>
             )}
@@ -359,11 +357,9 @@ const DashboardLayout = () => {
               <Menu className="w-5 h-5" />
             </Button>
             <h1 className="text-lg font-semibold text-foreground truncate px-4">
-              {menuItems.find(item => isActive(item.path))?.title || 'Etres AI Nexus'}
+              {menuItems.find(item => isActive(item.path))?.title || 'Niawi AI'}
             </h1>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-            </div>
+            <div className="w-10"></div>
           </div>
         </div>
 
