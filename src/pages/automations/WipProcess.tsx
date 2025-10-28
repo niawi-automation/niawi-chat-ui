@@ -9,6 +9,26 @@ import { ProcessResults } from '@/types/automations';
 import { exportWipToXlsx } from '@/lib/exportExcel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
+// Función para transformar datos del webhook a formato de tabla
+const transformWipData = (rawData: Array<Record<string, any>>): Array<Record<string, any>> => {
+  const transformedData: Array<Record<string, any>> = [];
+
+  rawData.forEach((item) => {
+    // Si el item tiene records directamente (nuevo formato)
+    if (item && typeof item === 'object' && Array.isArray(item.records)) {
+      item.records.forEach((record: Record<string, any>) => {
+        transformedData.push(record);
+      });
+    } 
+    // Si el item ya es un record individual (ya procesado)
+    else if (item && typeof item === 'object' && (item.buyer_name !== undefined || item.article_code)) {
+      transformedData.push(item);
+    }
+  });
+
+  return transformedData;
+};
+
 const WipProcess: React.FC = () => {
   const [currentResults, setCurrentResults] = useState<ProcessResults | null>(null);
   const [isWaiting, setIsWaiting] = useState(false);
@@ -35,9 +55,11 @@ const WipProcess: React.FC = () => {
     // Descarga automática del Excel cuando se reciben los datos
     if (results.data && results.data.length > 0) {
       setTimeout(() => {
-        exportWipToXlsx(results.data, 'WIP_procesado.xlsx');
-        // Opcional: mostrar notificación de descarga automática
-        console.log('📥 Descarga automática de WIP iniciada');
+        // Transformar los datos antes de exportar (igual que en WipResultsTable)
+        const transformedData = transformWipData(results.data);
+        console.log('📥 Datos transformados para exportación:', transformedData.length, 'registros');
+        exportWipToXlsx(transformedData, 'WIP_procesado.xlsx');
+        console.log('✅ Descarga automática de WIP iniciada');
       }, 500); // Pequeño delay para asegurar que la UI se actualice primero
     }
   };

@@ -4,6 +4,20 @@ export type ProcessType = 'WIP' | 'PO_BUYS' | 'PACKING_LIST';
 
 export type ProcessStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
+// Tipos de fábrica para WIP
+export type FactoryType = 
+  | '4S'
+  | 'ATLAS'
+  | 'CATALOGO'
+  | 'COTTON_CREATIONS'
+  | 'DAMIR'
+  | 'DISENO_ACMM'
+  | 'FIL_EXPORT'
+  | 'TAP'
+  | 'TEXTIMAXX'
+  | 'TRENTO'
+  | 'VIRCATEX';
+
 export interface AutomationProcess {
   id: string;
   type: ProcessType;
@@ -168,5 +182,6 @@ export interface AutomationState {
   isProcessing: boolean;
   currentResults: ProcessResults | null;
   error: string | null;
+  factoryType?: FactoryType | null;
 }
 

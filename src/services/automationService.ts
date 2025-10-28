@@ -1,4 +1,4 @@
-import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord } from '@/types/automations';
+import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord, FactoryType } from '@/types/automations';
 
 // Configuración de tipos de proceso
 export const PROCESS_TYPES_CONFIG = {
@@ -58,7 +58,8 @@ export const processFile = async (
   file: File, 
   processType: ProcessType,
   userId: string,
-  userName: string
+  userName: string,
+  factoryType?: FactoryType
 ): Promise<ProcessFileResponse> => {
   try {
     const config = PROCESS_TYPES_CONFIG[processType];
@@ -81,6 +82,11 @@ export const processFile = async (
     formData.append('userId', userId);
     formData.append('userName', userName);
     formData.append('timestamp', new Date().toISOString());
+    
+    // Agregar factory_type para WIP
+    if (processType === 'WIP' && factoryType) {
+      formData.append('factory_type', factoryType);
+    }
     
     // Llamada al webhook N8N
     const response = await fetch(config.webhookUrl, {

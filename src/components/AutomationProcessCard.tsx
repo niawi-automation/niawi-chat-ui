@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 import { 
   Upload, 
   FileSpreadsheet, 
@@ -14,9 +16,10 @@ import {
   AlertCircle,
   FileText,
   Package,
-  ShoppingCart
+  ShoppingCart,
+  Factory
 } from 'lucide-react';
-import { ProcessType, ProcessResults, AutomationState } from '@/types/automations';
+import { ProcessType, ProcessResults, AutomationState, FactoryType } from '@/types/automations';
 import { processFile, downloadProcessedFile, validateFile } from '@/services/automationService';
 import { useAgent } from '@/hooks/useAgent';
 import { toast } from 'sonner';
@@ -55,6 +58,21 @@ const PROCESS_TYPE_CONFIG = {
   }
 };
 
+// Lista de fábricas para WIP
+const FACTORIES: FactoryType[] = [
+  '4S',
+  'ATLAS',
+  'CATALOGO',
+  'COTTON_CREATIONS',
+  'DAMIR',
+  'DISENO_ACMM',
+  'FIL_EXPORT',
+  'TAP',
+  'TEXTIMAXX',
+  'TRENTO',
+  'VIRCATEX'
+];
+
 export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
   processType,
   onResultsUpdate,
@@ -67,7 +85,8 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
     selectedProcessType: processType,
     isProcessing: false,
     currentResults: null,
-    error: null
+    error: null,
+    factoryType: null
   });
 
   const config = PROCESS_TYPE_CONFIG[processType];
@@ -131,6 +150,12 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
   // Procesar archivo
   const handleProcessFile = useCallback(async () => {
     if (!state.selectedFile || !currentUser) return;
+    
+    // Validar que se haya seleccionado una fábrica para WIP
+    if (processType === 'WIP' && !state.factoryType) {
+      toast.error('Debes seleccionar una fábrica antes de procesar');
+      return;
+    }
 
     onProcessingStart?.();
     setState(prev => ({ ...prev, isProcessing: true, error: null }));
@@ -140,7 +165,8 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
         state.selectedFile,
         processType,
         currentUser.id,
-        currentUser.name
+        currentUser.name,
+        state.factoryType || undefined
       );
 
       if (result.success && result.data) {
@@ -170,9 +196,9 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
         error: errorMessage
       }));
       onProcessingError?.(errorMessage);
-      toast.error(errorMessage);
+        toast.error(errorMessage);
     }
-  }, [state.selectedFile, processType, currentUser, onResultsUpdate]);
+  }, [state.selectedFile, state.factoryType, processType, currentUser, onResultsUpdate, onProcessingStart, onProcessingError]);
 
   // Descargar archivo procesado
   const handleDownload = useCallback(async () => {
@@ -195,7 +221,8 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
       selectedProcessType: processType,
       isProcessing: false,
       currentResults: null,
-      error: null
+      error: null,
+      factoryType: null
     });
   }, [processType]);
 
@@ -316,11 +343,51 @@ export const AutomationProcessCard: React.FC<AutomationProcessCardProps> = ({
           )}
         </div>
 
+        {/* Selector de fábrica para WIP */}
+        {processType === 'WIP' && state.selectedFile && !state.isProcessing && !state.currentResults && (
+          <div className="space-y-2 animate-slide-in-up">
+            <Label htmlFor="factory-select" className="text-foreground flex items-center gap-2">
+              <Factory className="w-4 h-4 text-niawi-accent" />
+              Selecciona la Fábrica
+              <span className="text-niawi-danger">*</span>
+            </Label>
+            <Select 
+              value={state.factoryType || ''} 
+              onValueChange={(value) => setState(prev => ({ ...prev, factoryType: value as FactoryType }))}
+            >
+              <SelectTrigger 
+                id="factory-select"
+                className="w-full bg-niawi-surface border-niawi-border text-foreground hover:border-niawi-accent focus:border-niawi-accent transition-colors"
+              >
+                <SelectValue placeholder="Selecciona una fábrica..." />
+              </SelectTrigger>
+              <SelectContent className="bg-niawi-surface border-niawi-border">
+                {FACTORIES.map((factory) => (
+                  <SelectItem 
+                    key={factory} 
+                    value={factory}
+                    className="text-foreground hover:bg-niawi-accent/10 focus:bg-niawi-accent/20 cursor-pointer"
+                  >
+                    {factory}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {!state.factoryType && (
+              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Debes seleccionar una fábrica para continuar
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Botón de procesar */}
         {state.selectedFile && !state.isProcessing && !state.currentResults && (
           <Button
             onClick={handleProcessFile}
-            className="w-full bg-niawi-primary hover:bg-niawi-primary/90 btn-magnetic hover:shadow-xl hover:shadow-niawi-primary/40"
+            disabled={processType === 'WIP' && !state.factoryType}
+            className="w-full bg-niawi-primary hover:bg-niawi-primary/90 btn-magnetic hover:shadow-xl hover:shadow-niawi-primary/40 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Procesar Archivo
