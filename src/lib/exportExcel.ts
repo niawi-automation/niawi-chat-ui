@@ -112,19 +112,21 @@ const PACKING_LIST_FIELD_MAPPING: Record<string, string> = {
 export function exportWipToXlsx(rows: Array<Record<string, any>>, fileName = 'WIP_procesado.xlsx') {
   if (!Array.isArray(rows) || rows.length === 0) return;
 
+  // Construir un mapeo inverso: ExcelHeader -> snake_case
+  const excelToSnake: Record<string, string> = {};
+  for (const [snake, excel] of Object.entries(WIP_FIELD_MAPPING)) {
+    excelToSnake[excel] = snake;
+  }
+
   const normalized = rows.map((row) => {
     const output: Record<string, any> = {};
     
-    // Mapear campos del webhook a columnas de exportación
-    for (const [webhookField, exportColumn] of Object.entries(WIP_FIELD_MAPPING)) {
-      output[exportColumn] = row[webhookField] ?? '';
-    }
-    
-    // Asegurar que todas las columnas estén presentes
-    for (const col of WIP_COLUMNS) {
-      if (!(col in output)) {
-        output[col] = '';
-      }
+    // Para cada columna de salida, intentar obtener desde snake_case o desde el encabezado original
+    for (const excelHeader of WIP_COLUMNS) {
+      const snakeKey = excelToSnake[excelHeader];
+      const snakeValue = snakeKey ? row[snakeKey] : undefined;
+      const headerValue = row[excelHeader];
+      output[excelHeader] = snakeValue ?? headerValue ?? '';
     }
     
     return output;

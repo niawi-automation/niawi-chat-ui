@@ -10,21 +10,63 @@ import { exportWipToXlsx } from '@/lib/exportExcel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 // Función para transformar datos del webhook a formato de tabla
-// Los datos ya vienen transformados desde automationService.ts, pero mantenemos compatibilidad
+// Compatibilidad: acepta registros con snake_case o con encabezados originales (BuyerName, "PWN No", ...)
 const transformWipData = (rawData: Array<Record<string, any>>): Array<Record<string, any>> => {
   const transformedData: Array<Record<string, any>> = [];
 
-  rawData.forEach((item) => {
-    // Si el item tiene records directamente (formato del webhook sin transformar)
-    if (item && typeof item === 'object' && Array.isArray(item.records)) {
-      item.records.forEach((record: Record<string, any>) => {
-        transformedData.push(record);
-      });
-    } 
-    // Si el item ya es un record individual (ya procesado por automationService.ts)
-    else if (item && typeof item === 'object' && (item.buyer_name !== undefined || item.article_code !== undefined)) {
-      transformedData.push(item);
+  // Mapeo de encabezados originales -> snake_case interno
+  const headerToSnake: Record<string, string> = {
+    'BuyerName': 'buyer_name',
+    'PWN No': 'pwn_no',
+    'PONo': 'po_no',
+    'ArticleCode': 'article_code',
+    'ArticleDesc': 'article_desc',
+    'BuyerStyleRef': 'buyer_style_ref',
+    'Delivery Date': 'delivery_date',
+    'ColorCode': 'color_code',
+    'ColorName': 'color_name',
+    'SizeCode': 'size_code',
+    'POQty': 'po_qty',
+    'ProcessName': 'process_name',
+    'CurrentQty': 'current_qty',
+    'BalanceQty': 'balance_qty',
+    'StartProcess': 'start_process',
+    'ActualStartDate': 'actual_start_date',
+    'ReasonDesc': 'reason_desc',
+    'EndProcess': 'end_process',
+    'ActualEndDate': 'actual_end_date'
+  };
+
+  const normalizeRecord = (rec: Record<string, any>): Record<string, any> => {
+    // Si ya está en snake_case, devolver tal cual
+    if (rec && (rec.buyer_name !== undefined || rec.article_code !== undefined)) {
+      return rec;
     }
+    // Si viene con encabezados originales, convertirlos
+    const out: Record<string, any> = {};
+    for (const [orig, snake] of Object.entries(headerToSnake)) {
+      if (rec && Object.prototype.hasOwnProperty.call(rec, orig)) {
+        out[snake] = rec[orig];
+      } else {
+        out[snake] = null;
+      }
+    }
+    return out;
+  };
+
+  rawData.forEach((item) => {
+    if (!item || typeof item !== 'object') return;
+
+    // Si el item tiene records directamente (formato del webhook sin transformar)
+    if (Array.isArray((item as any).records)) {
+      (item as any).records.forEach((record: Record<string, any>) => {
+        transformedData.push(normalizeRecord(record));
+      });
+      return;
+    }
+
+    // Si el item ya es un record individual
+    transformedData.push(normalizeRecord(item));
   });
 
   return transformedData;
