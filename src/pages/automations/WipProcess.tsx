@@ -10,18 +10,19 @@ import { exportWipToXlsx } from '@/lib/exportExcel';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 // Función para transformar datos del webhook a formato de tabla
+// Los datos ya vienen transformados desde automationService.ts, pero mantenemos compatibilidad
 const transformWipData = (rawData: Array<Record<string, any>>): Array<Record<string, any>> => {
   const transformedData: Array<Record<string, any>> = [];
 
   rawData.forEach((item) => {
-    // Si el item tiene records directamente (nuevo formato)
+    // Si el item tiene records directamente (formato del webhook sin transformar)
     if (item && typeof item === 'object' && Array.isArray(item.records)) {
       item.records.forEach((record: Record<string, any>) => {
         transformedData.push(record);
       });
     } 
-    // Si el item ya es un record individual (ya procesado)
-    else if (item && typeof item === 'object' && (item.buyer_name !== undefined || item.article_code)) {
+    // Si el item ya es un record individual (ya procesado por automationService.ts)
+    else if (item && typeof item === 'object' && (item.buyer_name !== undefined || item.article_code !== undefined)) {
       transformedData.push(item);
     }
   });

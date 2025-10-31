@@ -116,11 +116,46 @@ export const processFile = async (
       });
 
       if (allRecords.length > 0) {
+        // Mapeo de campos del webhook (con espacios/mayúsculas) a formato interno (minúsculas con guiones bajos)
+        const WIP_FIELD_MAPPING: Record<string, string> = {
+          'BuyerName': 'buyer_name',
+          'PWN No': 'pwn_no',
+          'PONo': 'po_no',
+          'ArticleCode': 'article_code',
+          'ArticleDesc': 'article_desc',
+          'BuyerStyleRef': 'buyer_style_ref',
+          'Delivery Date': 'delivery_date',
+          'ColorCode': 'color_code',
+          'ColorName': 'color_name',
+          'SizeCode': 'size_code',
+          'POQty': 'po_qty',
+          'ProcessName': 'process_name',
+          'CurrentQty': 'current_qty',
+          'BalanceQty': 'balance_qty',
+          'StartProcess': 'start_process',
+          'ActualStartDate': 'actual_start_date',
+          'ReasonDesc': 'reason_desc',
+          'EndProcess': 'end_process',
+          'ActualEndDate': 'actual_end_date'
+        };
+
+        // Transformar cada registro del webhook al formato interno esperado
+        const transformedRecords = allRecords.map((record) => {
+          const transformed: Record<string, any> = {};
+          
+          // Mapear cada campo del webhook al formato interno
+          for (const [webhookField, internalField] of Object.entries(WIP_FIELD_MAPPING)) {
+            transformed[internalField] = record[webhookField] !== undefined ? record[webhookField] : null;
+          }
+          
+          return transformed;
+        });
+
         const wrapped: ProcessResults = {
           success: true,
-          data: allRecords,
+          data: transformedRecords,
           processedAt: new Date().toISOString(),
-          recordCount: allRecords.length
+          recordCount: transformedRecords.length
         };
         return {
           success: true,
