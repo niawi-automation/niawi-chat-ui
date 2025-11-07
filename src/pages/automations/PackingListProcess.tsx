@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { CheckCircle, Download, Clock, Upload, FileSpreadsheet } from 'lucide-react';
+import { CheckCircle, Download, Clock, Upload, FileSpreadsheet, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AutomationProcessCard } from '@/components/AutomationProcessCard';
 import PackingListResultsTable from '@/components/PackingListResultsTable';
 import { PackingListPWNIDPanel } from '@/components/PackingListPWNIDPanel';
-import { ProcessResults, PackingListRecord } from '@/types/automations';
+import { ProcessResults, PackingListRecord, ERPResponse } from '@/types/automations';
 import { exportPackingListToXlsx } from '@/lib/exportExcel';
 import { transformPackingListData } from '@/utils/packingListTransform';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -24,6 +24,7 @@ const PackingListProcess: React.FC = () => {
   const [transformedData, setTransformedData] = useState<PackingListRecord[]>([]);
   const [sessionId, setSessionId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [erpResponse, setErpResponse] = useState<ERPResponse | null>(null);
 
   // Hook para gestionar PWNID
   const {
@@ -166,12 +167,88 @@ const PackingListProcess: React.FC = () => {
 
       {currentResults && currentResults.data && currentResults.data.length > 0 && (
         <>
+          {/* Respuesta del ERP */}
+          {erpResponse && (
+            <Card className="bg-niawi-surface border-niawi-border">
+              <CardHeader>
+                <CardTitle className="text-foreground flex items-center gap-2">
+                  {erpResponse.warnings && erpResponse.warnings.length > 0 ? (
+                    <>
+                      <AlertTriangle className="w-5 h-5 text-amber-500" />
+                      Respuesta del ERP - Con Advertencias
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                      Respuesta del ERP - Exitoso
+                    </>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {/* Información del ERP */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {erpResponse.packingListId && (
+                      <div className="p-3 rounded-lg bg-niawi-bg border border-niawi-border">
+                        <div className="text-xs text-muted-foreground mb-1">Packing List ID</div>
+                        <div className="text-sm font-medium text-foreground">{erpResponse.packingListId}</div>
+                      </div>
+                    )}
+                    {erpResponse.packingListNumber && (
+                      <div className="p-3 rounded-lg bg-niawi-bg border border-niawi-border">
+                        <div className="text-xs text-muted-foreground mb-1">Packing List Number</div>
+                        <div className="text-sm font-medium text-foreground">{erpResponse.packingListNumber}</div>
+                      </div>
+                    )}
+                    {erpResponse.buyerPO && (
+                      <div className="p-3 rounded-lg bg-niawi-bg border border-niawi-border">
+                        <div className="text-xs text-muted-foreground mb-1">Buyer PO</div>
+                        <div className="text-sm font-medium text-foreground">{erpResponse.buyerPO}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Warnings si existen */}
+                  {erpResponse.warnings && erpResponse.warnings.length > 0 && (
+                    <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <div className="flex-1">
+                          <div className="font-medium text-amber-500 mb-2">Advertencias del ERP:</div>
+                          <ul className="list-disc list-inside space-y-1 text-sm text-foreground">
+                            {erpResponse.warnings.map((warning, index) => (
+                              <li key={index}>{warning}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mensaje de éxito */}
+                  {(!erpResponse.warnings || erpResponse.warnings.length === 0) && (
+                    <div className="p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-foreground">
+                          <strong className="text-green-500">Éxito:</strong> Los datos fueron enviados e insertados correctamente en el ERP.
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* 1. Panel de PWNID - Primero */}
           <PackingListPWNIDPanel
             groups={getBuyerPOGroups()}
             stats={getCompletionStats()}
             onUpdatePWNID={updatePWNID}
             onSendToERP={sendToERP}
+            onERPResponseReceived={setErpResponse}
             isAutoSaving={hasUnsavedChanges}
             isSendingToERP={isSendingToERP}
             lastSaved={lastSaved}

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle, Clock, Send, Loader2 } from 'lucide-react';
-import type { BuyerPOGroup, PWNIDCompletionStats } from '@/types/automations';
+import type { BuyerPOGroup, PWNIDCompletionStats, SendToERPResult, ERPResponse } from '@/types/automations';
 import { isValidPWNID, parsePWNIDInput } from '@/utils/packingListGrouping';
 import { toast } from 'sonner';
 
@@ -12,7 +12,8 @@ interface PackingListPWNIDPanelProps {
   groups: BuyerPOGroup[];
   stats: PWNIDCompletionStats;
   onUpdatePWNID: (buyerPONumber: string, pwnid: number | null) => void;
-  onSendToERP: () => Promise<{ success: boolean; error?: string }>;
+  onSendToERP: () => Promise<SendToERPResult>;
+  onERPResponseReceived?: (response: ERPResponse) => void;
   isAutoSaving?: boolean;
   isSendingToERP?: boolean;
   lastSaved?: Date | null;
@@ -23,6 +24,7 @@ export function PackingListPWNIDPanel({
   stats,
   onUpdatePWNID,
   onSendToERP,
+  onERPResponseReceived,
   isAutoSaving = false,
   isSendingToERP = false,
   lastSaved
@@ -121,8 +123,12 @@ export function PackingListPWNIDPanel({
 
     const result = await onSendToERP();
 
-    if (result.success) {
+    if (result.success && result.response) {
       toast.success('Datos enviados exitosamente al ERP');
+      // Notificar al componente padre sobre la respuesta
+      if (onERPResponseReceived) {
+        onERPResponseReceived(result.response);
+      }
     } else {
       toast.error(result.error || 'Error al enviar datos al ERP');
     }

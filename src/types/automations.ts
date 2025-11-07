@@ -208,3 +208,17 @@ export interface PWNIDCompletionStats {
   percentage: number;
 }
 
+// Tipos para respuesta del ERP
+export interface ERPResponse {
+  packingListId?: string;
+  packingListNumber?: string;
+  buyerPO?: string;
+  warnings?: string[];
+}
+
+export interface SendToERPResult {
+  success: boolean;
+  error?: string;
+  response?: ERPResponse;
+}
+

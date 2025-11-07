@@ -3,7 +3,8 @@ import type {
   PWNIDEditState,
   PWNIDCompletionStats,
   BuyerPOGroup,
-  PackingListRecord
+  PackingListRecord,
+  SendToERPResult
 } from '@/types/automations';
 
 const STORAGE_KEY_PREFIX = 'packing_list_pwnid_state_';
@@ -22,7 +23,7 @@ interface UsePackingListPWNIDReturn {
   clearAllPWNID: () => void;
   hasUnsavedChanges: boolean;
   lastSaved: Date | null;
-  sendToERP: () => Promise<{ success: boolean; error?: string }>;
+  sendToERP: () => Promise<SendToERPResult>;
   isSendingToERP: boolean;
 }
 
@@ -171,13 +172,14 @@ export function usePackingListPWNID({
   }, [pwnidState]);
 
   // Enviar datos al ERP
-  const sendToERP = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+  const sendToERP = useCallback(async (): Promise<SendToERPResult> => {
     try {
       setIsSendingToERP(true);
 
       // Verificar que todos los PWNID estén completos
       const stats = getCompletionStats();
       if (stats.incomplete > 0) {
+        setIsSendingToERP(false);
         return {
           success: false,
           error: `Faltan ${stats.incomplete} PWNID por completar`
@@ -280,7 +282,10 @@ export function usePackingListPWNID({
       console.log('✅ Respuesta del ERP:', result);
 
       setIsSendingToERP(false);
-      return { success: true };
+      return {
+        success: true,
+        response: result
+      };
 
     } catch (error) {
       console.error('❌ Error enviando al ERP:', error);
