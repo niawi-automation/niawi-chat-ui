@@ -21,6 +21,7 @@ const PACKING_LIST_TABLE_COLUMNS = [
   'FactoryERPCode',
   'BuyerPO',
   'PONumberEDI',
+  'PWNID',
   'DestinationCode',
   'Style',
   'DC',
@@ -50,6 +51,7 @@ const PACKING_LIST_COLUMN_NAMES: Record<string, string> = {
   'FactoryERPCode': 'Factory ERP Code',
   'BuyerPO': 'Buyer PO',
   'PONumberEDI': 'PO Number EDI',
+  'PWNID': 'PWNID',
   'DestinationCode': 'Destination Code',
   'Style': 'Style',
   'DC': 'DC',
@@ -82,8 +84,18 @@ export const PackingListResultsTable: React.FC<PackingListResultsTableProps> = (
   const [pageSize, setPageSize] = React.useState(defaultPageSize);
   const [searchTerm, setSearchTerm] = React.useState('');
 
-  // Transformar los datos
-  const transformedData = React.useMemo(() => transformPackingListData(data), [data]);
+  // Los datos ya vienen transformados desde PackingListProcess
+  // Solo los usamos directamente sin transformar de nuevo
+  const transformedData = React.useMemo(() => {
+    // Si los datos ya están en formato flat (tienen la propiedad BuyerPO), no transformar
+    if (data.length > 0 && 'BuyerPO' in data[0]) {
+      console.log('📊 Datos ya transformados, usando directamente');
+      return data;
+    }
+    // Si no, transformar (compatibilidad con formato antiguo)
+    console.log('📊 Transformando datos para tabla');
+    return transformPackingListData(data);
+  }, [data]);
 
   // Filtrar datos basado en el término de búsqueda
   const filteredData = React.useMemo(() => {

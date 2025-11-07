@@ -168,36 +168,37 @@ export const processFile = async (
     // Caso especial para PACKING_LIST: formato con message.content y packs anidados
     if (processType === 'PACKING_LIST') {
       const flattenedRecords: PackingListRecord[] = [];
-      
+
       // Manejar si es array o objeto único
       const dataArray = Array.isArray(result) ? result : [result];
-      
+
       console.log('📦 Procesando datos de Packing List:', dataArray.length, 'elementos');
-      
+
       dataArray.forEach((item: any, index: number) => {
         console.log(`📦 Procesando elemento ${index}:`, item);
-        
-        // Verificar si tiene la estructura esperada: { index, message: { role, content } }
-        if (item.message?.content?.packs && Array.isArray(item.message.content.packs)) {
-          const { 
+
+        // Verificar si tiene la estructura nueva directa: { buyerPONumber, PWNID, packs }
+        if (item.packs && Array.isArray(item.packs)) {
+          const {
             buyerName,
             factoryName,
             userName,
             buyerERPCode,
             factoryERPCode,
-            buyerPONumber, 
-            PONumberEDI 
-          } = item.message.content;
-          
-          console.log('📦 Datos principales:', { buyerName, factoryName, userName, buyerERPCode, factoryERPCode, buyerPONumber, PONumberEDI });
-          
-          item.message.content.packs.forEach((pack: any, packIndex: number) => {
+            buyerPONumber,
+            PONumberEDI,
+            PWNID
+          } = item;
+
+          console.log('📦 Datos principales (formato directo):', { buyerName, factoryName, userName, buyerERPCode, factoryERPCode, buyerPONumber, PONumberEDI, PWNID });
+
+          item.packs.forEach((pack: any, packIndex: number) => {
             console.log(`📦 Procesando pack ${packIndex}:`, pack);
-            
+
             if (pack.sizeDetail && Array.isArray(pack.sizeDetail)) {
               pack.sizeDetail.forEach((sizeDetail: any, sizeIndex: number) => {
                 console.log(`📦 Procesando sizeDetail ${sizeIndex}:`, sizeDetail);
-                
+
                 const flattenedRecord: PackingListRecord = {
                   BuyerName: buyerName || '',
                   FactoryName: factoryName || '',
@@ -206,7 +207,8 @@ export const processFile = async (
                   FactoryERPCode: factoryERPCode || '',
                   BuyerPO: buyerPONumber || '',
                   PONumberEDI: PONumberEDI || '',
-                  DestinationCode: pack.destinationCode || '',
+                  PWNID: PWNID ?? null,
+                  DestinationCode: pack.AddressDestination || pack.destinationCode || '',
                   Style: pack.style || '',
                   DC: pack.DC || '',
                   Address: pack.Address || '',
@@ -225,7 +227,64 @@ export const processFile = async (
                   Size: sizeDetail.Size || '',
                   ShippedQty: sizeDetail.ShippedQty || 0
                 };
-                
+
+                console.log('📦 Registro aplanado creado:', flattenedRecord);
+                flattenedRecords.push(flattenedRecord);
+              });
+            }
+          });
+        }
+        // Mantener compatibilidad con formato antiguo: { index, message: { role, content } }
+        else if (item.message?.content?.packs && Array.isArray(item.message.content.packs)) {
+          const {
+            buyerName,
+            factoryName,
+            userName,
+            buyerERPCode,
+            factoryERPCode,
+            buyerPONumber,
+            PONumberEDI,
+            PWNID
+          } = item.message.content;
+          
+          console.log('📦 Datos principales (formato antiguo):', { buyerName, factoryName, userName, buyerERPCode, factoryERPCode, buyerPONumber, PONumberEDI, PWNID });
+
+          item.message.content.packs.forEach((pack: any, packIndex: number) => {
+            console.log(`📦 Procesando pack ${packIndex}:`, pack);
+
+            if (pack.sizeDetail && Array.isArray(pack.sizeDetail)) {
+              pack.sizeDetail.forEach((sizeDetail: any, sizeIndex: number) => {
+                console.log(`📦 Procesando sizeDetail ${sizeIndex}:`, sizeDetail);
+
+                const flattenedRecord: PackingListRecord = {
+                  BuyerName: buyerName || '',
+                  FactoryName: factoryName || '',
+                  UserName: userName || '',
+                  BuyerERPCode: buyerERPCode || '',
+                  FactoryERPCode: factoryERPCode || '',
+                  BuyerPO: buyerPONumber || '',
+                  PONumberEDI: PONumberEDI || '',
+                  PWNID: PWNID ?? null,
+                  DestinationCode: pack.AddressDestination || pack.destinationCode || '',
+                  Style: pack.style || '',
+                  DC: pack.DC || '',
+                  Address: pack.Address || '',
+                  City: pack.City || '',
+                  State: pack.State || '',
+                  PostalCode: pack.PostalCode || '',
+                  Country: pack.Country || '',
+                  CartonsQty: pack.CartonsQty || 0,
+                  CartonLength: pack.CartonLength || 0,
+                  CartonWidth: pack.CartonWidth || 0,
+                  CartonHeight: pack.CartonHeight || 0,
+                  CartonNetWg: pack.CartonNetWg || 0,
+                  CartonGrossWg: pack.CartonGrossWg || 0,
+                  NroPacking: pack.nroPacking || 0,
+                  ColorName: sizeDetail.ColorName || '',
+                  Size: sizeDetail.Size || '',
+                  ShippedQty: sizeDetail.ShippedQty || 0
+                };
+
                 console.log('📦 Registro aplanado creado:', flattenedRecord);
                 flattenedRecords.push(flattenedRecord);
               });
@@ -441,11 +500,102 @@ export const getProcessHistory = async (): Promise<AutomationProcess[]> => {
 // Función para obtener estadísticas (mock por ahora)
 export const getAutomationStats = async (): Promise<{ totalProcesses: number; successfulProcesses: number; failedProcesses: number; pendingProcesses: number }> => {
   const history = await getProcessHistory();
-  
+
   return {
     totalProcesses: history.length,
     successfulProcesses: history.filter(p => p.status === 'completed').length,
     failedProcesses: history.filter(p => p.status === 'failed').length,
     pendingProcesses: history.filter(p => p.status === 'pending' || p.status === 'processing').length
   };
+};
+
+/**
+ * Función para procesar re-upload de Excel con PWNID completado
+ * Extrae los valores de PWNID del Excel y los retorna agrupados por BuyerPO
+ */
+export const parsePackingListExcelWithPWNID = async (
+  file: File
+): Promise<{ [buyerPONumber: string]: number | null }> => {
+  try {
+    // Validar que sea un archivo Excel
+    const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!['.xlsx', '.xls'].includes(fileExtension)) {
+      throw new Error('El archivo debe ser un Excel (.xlsx o .xls)');
+    }
+
+    // Importar la librería xlsx dinámicamente
+    const XLSX = await import('xlsx');
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          if (!data) {
+            reject(new Error('No se pudo leer el archivo'));
+            return;
+          }
+
+          // Parsear el archivo Excel
+          const workbook = XLSX.read(data, { type: 'binary' });
+
+          // Obtener la primera hoja
+          const sheetName = workbook.SheetNames[0];
+          if (!sheetName) {
+            reject(new Error('El archivo Excel está vacío'));
+            return;
+          }
+
+          const worksheet = workbook.Sheets[sheetName];
+
+          // Convertir a JSON
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+          if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            reject(new Error('El archivo Excel no contiene datos'));
+            return;
+          }
+
+          // Extraer PWNID por BuyerPO
+          const pwnidMap: { [buyerPONumber: string]: number | null } = {};
+
+          jsonData.forEach((row: any) => {
+            const buyerPO = row['BuyerPO'] || row['Buyer PO'];
+            const pwnid = row['PWNID'];
+
+            if (buyerPO && !pwnidMap[buyerPO]) {
+              // Parsear PWNID
+              if (pwnid === null || pwnid === undefined || pwnid === '') {
+                pwnidMap[buyerPO] = null;
+              } else {
+                const parsed = Number(pwnid);
+                if (!isNaN(parsed) && Number.isInteger(parsed) && parsed > 0) {
+                  pwnidMap[buyerPO] = parsed;
+                } else {
+                  pwnidMap[buyerPO] = null;
+                }
+              }
+            }
+          });
+
+          console.log('PWNID extraídos del Excel:', pwnidMap);
+          resolve(pwnidMap);
+
+        } catch (error) {
+          reject(new Error(`Error al parsear el Excel: ${error instanceof Error ? error.message : 'Error desconocido'}`));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Error al leer el archivo'));
+      };
+
+      reader.readAsBinaryString(file);
+    });
+
+  } catch (error) {
+    console.error('Error procesando Excel con PWNID:', error);
+    throw new Error(error instanceof Error ? error.message : 'Error al procesar el archivo Excel');
+  }
 };

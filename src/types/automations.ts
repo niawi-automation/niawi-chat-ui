@@ -118,6 +118,7 @@ export interface PackingListContent {
   factoryERPCode: string | null;
   buyerPONumber: string;
   PONumberEDI: string | null;
+  PWNID: number | null;
   packs: PackingListPack[];
 }
 
@@ -155,6 +156,7 @@ export interface PackingListRecord {
   FactoryERPCode: string | null;
   BuyerPO: string;
   PONumberEDI: string | null;
+  PWNID: number | null;
   DestinationCode: string;
   Style: string;
   DC: string;
@@ -183,5 +185,26 @@ export interface AutomationState {
   currentResults: ProcessResults | null;
   error: string | null;
   factoryType?: FactoryType | null;
+}
+
+// Tipos para gestión de PWNID
+export type PWNIDStatus = 'complete' | 'incomplete';
+
+export interface BuyerPOGroup {
+  buyerPONumber: string;
+  PWNID: number | null;
+  status: PWNIDStatus;
+  recordCount: number;
+}
+
+export interface PWNIDEditState {
+  [buyerPONumber: string]: number | null;
+}
+
+export interface PWNIDCompletionStats {
+  total: number;
+  complete: number;
+  incomplete: number;
+  percentage: number;
 }
 

@@ -20,6 +20,7 @@ export const transformPackingListData = (rawData: Array<Record<string, any>>): A
       factoryERPCode,
       buyerPONumber,
       PONumberEDI,
+      PWNID,
       packs
     } = item;
     
@@ -31,6 +32,7 @@ export const transformPackingListData = (rawData: Array<Record<string, any>>): A
         console.log(`🔄 Procesando pack ${packIndex}:`, pack);
         
         const {
+          AddressDestination,
           destinationCode,
           style,
           DC,
@@ -71,7 +73,8 @@ export const transformPackingListData = (rawData: Array<Record<string, any>>): A
               FactoryERPCode: factoryERPCode || '',
               BuyerPO: buyerPONumber || '',
               PONumberEDI: PONumberEDI || '',
-              DestinationCode: destinationCode || '',
+              PWNID: PWNID ?? null,
+              DestinationCode: AddressDestination || destinationCode || '',
               Style: style || '',
               DC: DC || '',
               Address: Address || '',
