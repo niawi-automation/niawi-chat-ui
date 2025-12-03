@@ -222,3 +222,52 @@ export interface SendToERPResult {
   response?: ERPResponse;
 }
 
+// Tipos para dashboard de ejecuciones en tiempo real
+
+// Respuesta del webhook de N8N
+export interface WebhookExecution {
+  id: string;
+  finished: boolean;
+  mode: string;
+  retryOf: string | null;
+  retrySuccessId: string | null;
+  status: 'success' | 'error' | 'running';
+  startedAt: string;
+  stoppedAt: string | null;
+  workflowId: string;
+  waitTill: string | null;
+  workflowName: 'WIP' | 'PackingList';
+}
+
+// Registro transformado para la UI
+export interface ExecutionRecord {
+  id: string;
+  workflowName: 'WIP' | 'PackingList';
+  status: 'success' | 'error' | 'running';
+  startedAt: Date;
+  stoppedAt: Date | null;
+  duration: number | null; // milliseconds
+  mode: string;
+  finished: boolean;
+}
+
+// Estadísticas del dashboard
+export interface DashboardStats {
+  totalExecutions: number;
+  successfulExecutions: number;
+  failedExecutions: number;
+  runningExecutions: number;
+  averageDuration: number; // milliseconds
+  wipCount: number;
+  packingListCount: number;
+}
+
+// Estado de filtros para la tabla de ejecuciones
+export interface ExecutionFilters {
+  workflowName: 'WIP' | 'PackingList' | 'all';
+  status: 'success' | 'error' | 'running' | 'all';
+  dateFrom: Date | undefined;
+  dateTo: Date | undefined;
+  searchTerm: string;
+}
+

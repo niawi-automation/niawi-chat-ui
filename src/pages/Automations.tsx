@@ -47,12 +47,6 @@ export default function Automations() {
             >
               Packing List
             </button>
-            <button
-              className={`px-4 py-2 rounded-md text-sm ${isActive('history') ? 'bg-niawi-primary text-white' : 'text-foreground'}`}
-              onClick={() => navigate('history')}
-            >
-              Historial
-            </button>
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord, FactoryType } from '@/types/automations';
+import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord, FactoryType, WebhookExecution, ExecutionRecord, DashboardStats, ExecutionFilters } from '@/types/automations';
 
 // Configuración de tipos de proceso
 export const PROCESS_TYPES_CONFIG = {
@@ -433,6 +433,206 @@ export const downloadProcessedFile = async (fileUrl: string, fileName: string): 
     throw new Error('No se pudo descargar el archivo procesado');
   }
 };
+
+// ========================================
+// FUNCIONES PARA DASHBOARD DE EJECUCIONES EN TIEMPO REAL
+// ========================================
+
+const WEBHOOK_EXECUTIONS_URL = 'https://automation.wtsusa.us/webhook/reportewts';
+
+/**
+ * Obtener ejecuciones desde el webhook productivo de N8N
+ */
+export const fetchExecutions = async (): Promise<WebhookExecution[]> => {
+  try {
+    const response = await fetch(WEBHOOK_EXECUTIONS_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Validar que sea un array
+    if (!Array.isArray(data)) {
+      throw new Error('Invalid response format: expected array');
+    }
+
+    return data as WebhookExecution[];
+  } catch (error) {
+    console.error('Error fetching executions:', error);
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : 'Failed to fetch execution data'
+    );
+  }
+};
+
+/**
+ * Transformar datos del webhook a formato UI-friendly
+ */
+export const transformExecutions = (
+  executions: WebhookExecution[]
+): ExecutionRecord[] => {
+  return executions.map((exec) => {
+    const startedAt = new Date(exec.startedAt);
+    const stoppedAt = exec.stoppedAt ? new Date(exec.stoppedAt) : null;
+
+    // Calcular duración en milliseconds
+    const duration = stoppedAt
+      ? stoppedAt.getTime() - startedAt.getTime()
+      : null;
+
+    return {
+      id: exec.id,
+      workflowName: exec.workflowName,
+      status: exec.status,
+      startedAt,
+      stoppedAt,
+      duration,
+      mode: exec.mode,
+      finished: exec.finished,
+    };
+  });
+};
+
+/**
+ * Calcular estadísticas del dashboard desde los datos de ejecución
+ */
+export const calculateStats = (
+  executions: ExecutionRecord[]
+): DashboardStats => {
+  const totalExecutions = executions.length;
+
+  const successfulExecutions = executions.filter(
+    (e) => e.status === 'success'
+  ).length;
+
+  const failedExecutions = executions.filter(
+    (e) => e.status === 'error'
+  ).length;
+
+  const runningExecutions = executions.filter(
+    (e) => !e.finished || e.status === 'running'
+  ).length;
+
+  const wipCount = executions.filter(
+    (e) => e.workflowName === 'WIP'
+  ).length;
+
+  const packingListCount = executions.filter(
+    (e) => e.workflowName === 'PackingList'
+  ).length;
+
+  // Calcular duración promedio (solo ejecuciones completadas)
+  const completedWithDuration = executions.filter(
+    (e) => e.duration !== null && e.finished
+  );
+
+  const averageDuration = completedWithDuration.length > 0
+    ? completedWithDuration.reduce((sum, e) => sum + (e.duration || 0), 0) /
+      completedWithDuration.length
+    : 0;
+
+  return {
+    totalExecutions,
+    successfulExecutions,
+    failedExecutions,
+    runningExecutions,
+    averageDuration,
+    wipCount,
+    packingListCount,
+  };
+};
+
+/**
+ * Filtrar ejecuciones según criterios de filtrado
+ */
+export const filterExecutions = (
+  executions: ExecutionRecord[],
+  filters: ExecutionFilters
+): ExecutionRecord[] => {
+  return executions.filter((exec) => {
+    // Filtro por workflow name
+    if (filters.workflowName !== 'all' &&
+        exec.workflowName !== filters.workflowName) {
+      return false;
+    }
+
+    // Filtro por estado
+    if (filters.status !== 'all' && exec.status !== filters.status) {
+      return false;
+    }
+
+    // Filtro por fecha desde
+    if (filters.dateFrom && exec.startedAt < filters.dateFrom) {
+      return false;
+    }
+
+    // Filtro por fecha hasta (incluir todo el día)
+    if (filters.dateTo) {
+      const endOfDay = new Date(filters.dateTo);
+      endOfDay.setHours(23, 59, 59, 999);
+      if (exec.startedAt > endOfDay) {
+        return false;
+      }
+    }
+
+    // Filtro por término de búsqueda (buscar en ID)
+    if (filters.searchTerm &&
+        !exec.id.toLowerCase().includes(filters.searchTerm.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  });
+};
+
+/**
+ * Formatear duración en formato legible
+ */
+export const formatDuration = (milliseconds: number | null): string => {
+  if (milliseconds === null) return '-';
+
+  const seconds = Math.floor(milliseconds / 1000);
+
+  // Menos de 1 segundo
+  if (seconds < 1) {
+    return `${milliseconds}ms`;
+  }
+
+  // Menos de 1 minuto
+  if (seconds < 60) {
+    return `${seconds}s`;
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  // Menos de 1 hora
+  if (minutes < 60) {
+    return remainingSeconds > 0
+      ? `${minutes}m ${remainingSeconds}s`
+      : `${minutes}m`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+
+  return remainingMinutes > 0
+    ? `${hours}h ${remainingMinutes}m`
+    : `${hours}h`;
+};
+
+// ========================================
+// FUNCIONES MOCK (DEPRECADAS - MANTENER POR COMPATIBILIDAD)
+// ========================================
 
 // Función para obtener historial de procesos (mock por ahora)
 export const getProcessHistory = async (): Promise<AutomationProcess[]> => {

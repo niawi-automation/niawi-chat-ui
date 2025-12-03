@@ -18,7 +18,6 @@ import AutomationsDashboard from "./pages/automations/AutomationsDashboard";
 import WipProcess from "./pages/automations/WipProcess";
 import PoBuysProcess from "./pages/automations/PoBuysProcess";
 import PackingListProcess from "./pages/automations/PackingListProcess";
-import { AutomationHistory } from "./components/AutomationHistory";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import AgentsDashboard from "./pages/AgentsDashboard";
@@ -49,7 +48,6 @@ const App = () => (
                   <Route path="wip" element={<WipProcess />} />
                   <Route path="po-buys" element={<PoBuysProcess />} />
                   <Route path="packing-list" element={<PackingListProcess />} />
-                  <Route path="history" element={<AutomationHistory />} />
                 </Route>
                 <Route path="settings" element={<Settings />} />
               </Route>
