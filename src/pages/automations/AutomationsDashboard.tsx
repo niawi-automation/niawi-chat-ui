@@ -7,13 +7,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { FileSpreadsheet, CheckCircle, XCircle, Clock, RefreshCw, CalendarIcon, Activity, Package, Timer, Search } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle, XCircle, Clock, RefreshCw, CalendarIcon, Activity, Package, Timer, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchExecutions, transformExecutions, calculateStats, filterExecutions, formatDuration } from '@/services/automationService';
 import { ExecutionFilters, ExecutionRecord } from '@/types/automations';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
+
+type SortField = 'id' | 'workflowName' | 'status' | 'startedAt' | 'stoppedAt' | 'duration';
+type SortDirection = 'asc' | 'desc';
 
 const AutomationsDashboard: React.FC = () => {
   // Estado de filtros
@@ -24,6 +27,10 @@ const AutomationsDashboard: React.FC = () => {
     dateTo: undefined,
     searchTerm: '',
   });
+
+  // Estado de ordenamiento (por defecto: más reciente primero)
+  const [sortField, setSortField] = useState<SortField>('startedAt');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
   // Estado de paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,13 +60,58 @@ const AutomationsDashboard: React.FC = () => {
     [executions, filters]
   );
 
+  // Ordenar ejecuciones
+  const sortedExecutions = useMemo(() => {
+    const sorted = [...filteredExecutions];
+
+    sorted.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortField) {
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
+          break;
+        case 'workflowName':
+          aValue = a.workflowName;
+          bValue = b.workflowName;
+          break;
+        case 'status':
+          aValue = a.status;
+          bValue = b.status;
+          break;
+        case 'startedAt':
+          aValue = a.startedAt.getTime();
+          bValue = b.startedAt.getTime();
+          break;
+        case 'stoppedAt':
+          aValue = a.stoppedAt?.getTime() ?? 0;
+          bValue = b.stoppedAt?.getTime() ?? 0;
+          break;
+        case 'duration':
+          aValue = a.duration ?? 0;
+          bValue = b.duration ?? 0;
+          break;
+        default:
+          return 0;
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return sorted;
+  }, [filteredExecutions, sortField, sortDirection]);
+
   // Paginación
   const paginatedExecutions = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredExecutions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredExecutions, currentPage]);
+    return sortedExecutions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedExecutions, currentPage]);
 
-  const totalPages = Math.ceil(filteredExecutions.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(sortedExecutions.length / ITEMS_PER_PAGE);
 
   // Handlers
   const handleRefresh = () => {
@@ -70,6 +122,27 @@ const AutomationsDashboard: React.FC = () => {
   const handleFilterChange = (key: keyof ExecutionFilters, value: any) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1); // Resetear a página 1 al cambiar filtros
+  };
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      // Cambiar dirección si ya está ordenado por este campo
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Nuevo campo: ordenar descendente por defecto
+      setSortField(field);
+      setSortDirection('desc');
+    }
+    setCurrentPage(1); // Resetear a página 1 al cambiar orden
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-4 h-4 ml-1 opacity-50" />;
+    }
+    return sortDirection === 'asc'
+      ? <ArrowUp className="w-4 h-4 ml-1" />
+      : <ArrowDown className="w-4 h-4 ml-1" />;
   };
 
   const formatNumber = (num: number) => new Intl.NumberFormat('es-ES').format(num);
@@ -327,7 +400,7 @@ const AutomationsDashboard: React.FC = () => {
           </div>
 
           {/* Tabla */}
-          {filteredExecutions.length === 0 ? (
+          {sortedExecutions.length === 0 ? (
             <div className="text-center py-12">
               <FileSpreadsheet className="w-16 h-16 text-muted-foreground mx-auto mb-4 opacity-50" />
               <p className="text-lg text-muted-foreground">No se encontraron ejecuciones</p>
@@ -339,13 +412,60 @@ const AutomationsDashboard: React.FC = () => {
                 <Table>
                   <TableHeader>
                     <TableRow className="bg-niawi-bg/50">
-                      <TableHead className="text-foreground">ID</TableHead>
-                      <TableHead className="text-foreground">Workflow</TableHead>
-                      <TableHead className="text-foreground">Estado</TableHead>
-                      <TableHead className="text-foreground">Fecha Inicio</TableHead>
-                      <TableHead className="text-foreground">Fecha Fin</TableHead>
-                      <TableHead className="text-foreground">Duración</TableHead>
-                      <TableHead className="text-foreground">Modo</TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('id')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          ID
+                          {getSortIcon('id')}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('workflowName')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          Workflow
+                          {getSortIcon('workflowName')}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('status')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          Estado
+                          {getSortIcon('status')}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('startedAt')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          Fecha Inicio
+                          {getSortIcon('startedAt')}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('stoppedAt')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          Fecha Fin
+                          {getSortIcon('stoppedAt')}
+                        </button>
+                      </TableHead>
+                      <TableHead className="text-foreground">
+                        <button
+                          onClick={() => handleSort('duration')}
+                          className="flex items-center hover:text-niawi-primary transition-colors"
+                        >
+                          Duración
+                          {getSortIcon('duration')}
+                        </button>
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -371,7 +491,6 @@ const AutomationsDashboard: React.FC = () => {
                         <TableCell className="text-muted-foreground font-mono text-sm">
                           {formatDuration(exec.duration)}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{exec.mode}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -381,7 +500,7 @@ const AutomationsDashboard: React.FC = () => {
               {/* Paginación */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
                 <p className="text-sm text-muted-foreground">
-                  Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} a {Math.min(currentPage * ITEMS_PER_PAGE, filteredExecutions.length)} de {filteredExecutions.length} ejecuciones
+                  Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1} a {Math.min(currentPage * ITEMS_PER_PAGE, sortedExecutions.length)} de {sortedExecutions.length} ejecuciones
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
