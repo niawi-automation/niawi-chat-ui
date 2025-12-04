@@ -38,16 +38,32 @@ export const ProcessingStatusAlert: React.FC<ProcessingStatusAlertProps> = ({
         </Alert>
       )}
 
-      {/* Alerta de Hojas No Procesadas (Prioridad 2) */}
+      {/* Alerta de Hojas No Procesadas (Prioridad 2) - PROMINENTE */}
       {hasUnprocessedSheets && (
-        <Alert className="border-amber-500/30 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Hojas No Procesadas</AlertTitle>
+        <Alert
+          role="alert"
+          className="border-2 border-amber-500 bg-amber-500/10 text-amber-900 dark:bg-amber-950 dark:text-amber-100"
+        >
+          <AlertTriangle className="h-5 w-5 text-amber-600" />
+          <AlertTitle className="text-lg font-bold text-amber-700 dark:text-amber-400">
+            ⚠️ Atención: Hojas No Procesadas
+          </AlertTitle>
           <AlertDescription>
-            <p className="font-medium mb-2">
-              {sheetsAnalysis.processedSheets} de {sheetsAnalysis.totalSheets} hojas fueron procesadas
-              ({sheetsAnalysis.processingRate.toFixed(0)}%)
-            </p>
+            <div className="mt-2 p-4 bg-amber-100 dark:bg-amber-900/30 rounded-lg border border-amber-300 dark:border-amber-700">
+              <p className="text-xl font-bold text-amber-800 dark:text-amber-200 mb-1">
+                {sheetsAnalysis.processedSheets} / {sheetsAnalysis.totalSheets} hojas procesadas
+              </p>
+              <div className="w-full h-3 bg-amber-200 dark:bg-amber-800 rounded-full mt-2 mb-3">
+                <div
+                  className="h-full bg-amber-600 dark:bg-amber-500 rounded-full transition-all duration-500"
+                  style={{ width: `${sheetsAnalysis.processingRate}%` }}
+                  aria-label={`${sheetsAnalysis.processingRate.toFixed(0)}% procesado`}
+                />
+              </div>
+              <p className="text-sm text-amber-700 dark:text-amber-300">
+                Tasa de procesamiento: <strong>{sheetsAnalysis.processingRate.toFixed(1)}%</strong>
+              </p>
+            </div>
 
             {sheetsAnalysis.summary.sheetsNotLoaded.length > 0 && (
               <div className="mt-3">

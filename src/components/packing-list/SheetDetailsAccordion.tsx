@@ -100,7 +100,8 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
-              <div className="overflow-x-auto">
+              {/* Vista Desktop: Tabla */}
+              <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -152,6 +153,70 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
                     })}
                   </TableBody>
                 </Table>
+              </div>
+
+              {/* Vista Mobile: Cards */}
+              <div className="md:hidden space-y-3">
+                {sheetsAnalysis.sheetDetails.map((sheet, index) => {
+                  const isProblematic =
+                    sheet.status === 'error' ||
+                    sheet.errors.length > 0 ||
+                    sheet.warnings.length > 0;
+
+                  return (
+                    <div
+                      key={index}
+                      className={`p-4 rounded-lg border-2 ${
+                        isProblematic
+                          ? 'bg-red-50 dark:bg-red-950 border-red-300 dark:border-red-800'
+                          : 'bg-card border-border'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <p className="font-mono text-xs flex-1 mr-2" title={sheet.sheetName}>
+                          {sheet.sheetName.length > 35
+                            ? `${sheet.sheetName.substring(0, 35)}...`
+                            : sheet.sheetName}
+                        </p>
+                        <StatusBadge status={sheet.status} />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div>
+                          <span className="text-muted-foreground text-xs">Unidades:</span>
+                          <p className="font-semibold">
+                            {sheet.extractedData.totalUnits > 0
+                              ? sheet.extractedData.totalUnits.toLocaleString()
+                              : '—'}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground text-xs">Cartones:</span>
+                          <p className="font-semibold">
+                            {sheet.extractedData.cartonsCount > 0
+                              ? sheet.extractedData.cartonsCount.toLocaleString()
+                              : '—'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {sheet.type === 'packing_data' && (
+                        <div className="mt-3 pt-3 border-t">
+                          <span className="text-muted-foreground text-xs block mb-1">Tallas:</span>
+                          <p className="font-mono text-xs">
+                            {formatSizeTotals(sheet.extractedData.sizeTotals)}
+                          </p>
+                        </div>
+                      )}
+
+                      {sheet.type !== 'packing_data' && (
+                        <div className="mt-2">
+                          <span className="text-muted-foreground italic text-xs">[{sheet.type}]</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Mostrar errores/warnings si existen */}

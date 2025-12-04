@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Package, Box, CheckCircle2, Tag } from 'lucide-react';
+import { Package, Box, CheckCircle2, Tag, FileSpreadsheet } from 'lucide-react';
 import { PackingListStats, SheetsAnalysis } from '@/types/automations';
 
 interface StatsOverviewProps {
@@ -22,8 +22,8 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, sheetsAnaly
         <CardTitle>Resumen Global</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* Grid de Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        {/* Grid de Stats Cards - 5 métricas */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
           {/* Total Unidades */}
           <div className="flex flex-col items-center p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
             <Package className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-2" />
@@ -69,6 +69,25 @@ export const StatsOverview: React.FC<StatsOverviewProps> = ({ stats, sheetsAnaly
             <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
               {stats.uniqueDCs.length} DC{stats.uniqueDCs.length > 1 ? 's' : ''}
             </p>
+          </div>
+
+          {/* Hojas Procesadas - NUEVA MÉTRICA */}
+          <div className="flex flex-col items-center p-4 bg-emerald-50 dark:bg-emerald-950 rounded-lg">
+            <FileSpreadsheet className="h-8 w-8 text-emerald-600 dark:text-emerald-400 mb-2" />
+            <p className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+              {sheetsAnalysis.processedSheets}/{sheetsAnalysis.totalSheets}
+            </p>
+            <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-1">
+              Hojas cargadas
+            </p>
+            {/* Barra de progreso mini */}
+            <div className="w-full h-1.5 bg-emerald-200 dark:bg-emerald-800 rounded-full mt-2">
+              <div
+                className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full transition-all duration-500"
+                style={{ width: `${sheetsAnalysis.processingRate}%` }}
+                aria-label={`${sheetsAnalysis.processingRate.toFixed(0)}% de hojas procesadas`}
+              />
+            </div>
           </div>
         </div>
 
