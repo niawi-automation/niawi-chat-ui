@@ -1,4 +1,4 @@
-import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord, FactoryType, WebhookExecution, ExecutionRecord, DashboardStats, ExecutionFilters } from '@/types/automations';
+import { ProcessType, ProcessFileResponse, ProcessResults, AutomationProcess, WipWebhookResponse, PackingListRecord, PackingDataResponse, FactoryType, WebhookExecution, ExecutionRecord, DashboardStats, ExecutionFilters } from '@/types/automations';
 
 // Configuración de tipos de proceso
 export const PROCESS_TYPES_CONFIG = {
@@ -174,10 +174,100 @@ export const processFile = async (
 
       console.log('📦 Procesando datos de Packing List:', dataArray.length, 'elementos');
 
+      // Verificar si es el NUEVO FORMATO con stats
+      const firstItem = dataArray[0];
+      const hasNewFormat = firstItem?.packingData && firstItem?.stats && firstItem?._meta;
+
+      if (hasNewFormat) {
+        console.log('📦 NUEVO FORMATO detectado con stats');
+        const response = firstItem as PackingDataResponse;
+
+        // Aplanar packingData usando lógica existente
+        const packingContent = response.packingData;
+
+        if (packingContent.packs && Array.isArray(packingContent.packs)) {
+          const {
+            buyerName,
+            factoryName,
+            userName,
+            buyerERPCode,
+            factoryERPCode,
+            buyerPONumber,
+            PONumberEDI,
+            PWNID
+          } = packingContent;
+
+          console.log('📦 Datos principales (nuevo formato):', { buyerName, factoryName, buyerPONumber });
+
+          packingContent.packs.forEach((pack: any, packIndex: number) => {
+            console.log(`📦 Procesando pack ${packIndex}:`, pack);
+
+            if (pack.sizeDetail && Array.isArray(pack.sizeDetail)) {
+              pack.sizeDetail.forEach((sizeDetail: any, sizeIndex: number) => {
+                console.log(`📦 Procesando sizeDetail ${sizeIndex}:`, sizeDetail);
+
+                const flattenedRecord: PackingListRecord = {
+                  BuyerName: buyerName || '',
+                  FactoryName: factoryName || '',
+                  UserName: userName || '',
+                  BuyerERPCode: buyerERPCode || '',
+                  FactoryERPCode: factoryERPCode || '',
+                  BuyerPO: buyerPONumber || '',
+                  PONumberEDI: PONumberEDI || '',
+                  PWNID: PWNID ?? null,
+                  DestinationCode: pack.AddressDestination || pack.destinationCode || '',
+                  Style: pack.style || '',
+                  DC: pack.DC || '',
+                  Address: pack.Address || '',
+                  City: pack.City || '',
+                  State: pack.State || '',
+                  PostalCode: pack.PostalCode || '',
+                  Country: pack.Country || '',
+                  CartonsQty: pack.CartonsQty || 0,
+                  CartonLength: pack.CartonLength || 0,
+                  CartonWidth: pack.CartonWidth || 0,
+                  CartonHeight: pack.CartonHeight || 0,
+                  CartonNetWg: pack.CartonNetWg || 0,
+                  CartonGrossWg: pack.CartonGrossWg || 0,
+                  NroPacking: pack.nroPacking || 0,
+                  ColorName: sizeDetail.ColorName || '',
+                  Size: sizeDetail.Size || '',
+                  ShippedQty: sizeDetail.ShippedQty || 0
+                };
+
+                console.log('📦 Registro aplanado creado:', flattenedRecord);
+                flattenedRecords.push(flattenedRecord);
+              });
+            }
+          });
+        }
+
+        console.log('📦 Total de registros aplanados:', flattenedRecords.length);
+
+        if (flattenedRecords.length > 0) {
+          const wrapped: ProcessResults = {
+            success: true,
+            data: flattenedRecords,
+            processedAt: response._meta.processedAt,
+            recordCount: flattenedRecords.length,
+            // ADJUNTAR STATS
+            stats: response.stats,
+            sheetsAnalysis: response.stats.sheetsAnalysis,
+            _meta: response._meta
+          };
+          return {
+            success: true,
+            data: wrapped,
+            processId: `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+          };
+        }
+      }
+
+      // FORMATO LEGACY - Mantener compatibilidad
       dataArray.forEach((item: any, index: number) => {
         console.log(`📦 Procesando elemento ${index}:`, item);
 
-        // Verificar si tiene la estructura nueva directa: { buyerPONumber, PWNID, packs }
+        // Verificar si tiene la estructura legacy directa: { buyerPONumber, PWNID, packs }
         if (item.packs && Array.isArray(item.packs)) {
           const {
             buyerName,

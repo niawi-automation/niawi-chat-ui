@@ -39,6 +39,10 @@ export interface ProcessResults {
   message?: string;
   processedAt: string;
   recordCount?: number;
+  // NUEVOS CAMPOS para stats de Packing List
+  stats?: PackingListStats;
+  sheetsAnalysis?: SheetsAnalysis;
+  _meta?: PackingDataMeta;
 }
 
 // Nuevo tipo para el formato WIP con records directamente
@@ -220,6 +224,122 @@ export interface SendToERPResult {
   success: boolean;
   error?: string;
   response?: ERPResponse;
+}
+
+// ==========================================
+// NUEVOS TIPOS PARA STATS DE PACKING LIST
+// ==========================================
+
+/**
+ * Respuesta completa del webhook (siempre array con 1 elemento)
+ */
+export interface PackingDataResponse {
+  packingData: PackingListContent; // Estructura original para Excel
+  stats: PackingListStats;
+  _meta: PackingDataMeta;
+}
+
+/**
+ * Estadísticas globales del documento procesado
+ */
+export interface PackingListStats {
+  // Conteos generales
+  orderTotalsCount: number;
+  shippingCartonsCount: number;
+
+  // Información del PO
+  buyerPONumber: string;
+  globalStyle: string;
+  globalDC: string;
+
+  // Totales de unidades
+  sizeTotals: Record<string, number>; // { "1X": 17, "2X": 15, ... }
+  grandTotalUnits: number;
+  totalCartonsQty: number;
+
+  // Valores únicos
+  uniqueDCs: string[];
+  uniqueStyles: string[];
+  uniqueColors: string[];
+
+  // Flags de calidad de datos
+  hasSummaryBySKU: boolean;
+  hasCartonData: boolean;
+  hasDiscrepancies: boolean;
+  discrepanciesCount: number;
+
+  // Análisis de hojas
+  sheetsAnalysis: SheetsAnalysis;
+}
+
+/**
+ * Análisis del procesamiento de hojas
+ */
+export interface SheetsAnalysis {
+  // Contadores
+  totalSheets: number;
+  processedSheets: number;
+  skippedSheets: number;
+  errorSheets: number;
+
+  // Indicadores
+  allSheetsProcessed: boolean;
+  processingRate: number; // 0-100
+
+  // Clasificación por tipo
+  sheetsByType: {
+    packing_data: number;
+    address_book: number;
+    metadata_only: number;
+    empty: number;
+    unknown: number;
+  };
+
+  // Problemas
+  hasProblematicSheets: boolean;
+  problematicSheets: string[];
+
+  // Resumen
+  summary: {
+    message: string;
+    sheetsNotLoaded: string[];
+    sheetsWithWarnings: string[];
+  };
+
+  // Detalles por hoja
+  sheetDetails: SheetDetail[];
+}
+
+/**
+ * Detalle individual de cada hoja procesada
+ */
+export interface SheetDetail {
+  sheetName: string;
+  status: 'processed' | 'skipped' | 'error' | 'empty';
+  type: 'packing_data' | 'address_book' | 'metadata_only' | 'empty' | 'unknown';
+
+  hasCartonData: boolean;
+  hasSummaryData: boolean;
+
+  extractedData: {
+    style: string | null;
+    DC: string | null;
+    totalUnits: number;
+    cartonsCount: number;
+    sizeTotals: Record<string, number>;
+  };
+
+  warnings: string[];
+  errors: string[];
+}
+
+/**
+ * Metadata del procesamiento
+ */
+export interface PackingDataMeta {
+  processedAt: string; // ISO timestamp
+  packsCount: number;
+  hasStats: boolean;
 }
 
 // Tipos para dashboard de ejecuciones en tiempo real

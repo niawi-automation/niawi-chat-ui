@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CheckCircle, Download, Clock, Upload, FileSpreadsheet, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import { AutomationProcessCard } from '@/components/AutomationProcessCard';
-import PackingListResultsTable from '@/components/PackingListResultsTable';
+import { PackingListStats } from '@/components/packing-list/PackingListStats';
 import { PackingListPWNIDPanel } from '@/components/PackingListPWNIDPanel';
-import { ProcessResults, PackingListRecord, ERPResponse } from '@/types/automations';
+import { ProcessResults, PackingListRecord, ERPResponse, PackingListStats as PackingListStatsType, SheetsAnalysis, PackingDataMeta } from '@/types/automations';
 import { exportPackingListToXlsx } from '@/lib/exportExcel';
 import { transformPackingListData } from '@/utils/packingListTransform';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
@@ -25,6 +25,9 @@ const PackingListProcess: React.FC = () => {
   const [sessionId, setSessionId] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [erpResponse, setErpResponse] = useState<ERPResponse | null>(null);
+  const [packingStats, setPackingStats] = useState<PackingListStatsType | null>(null);
+  const [sheetsAnalysis, setSheetsAnalysis] = useState<SheetsAnalysis | null>(null);
+  const [metaData, setMetaData] = useState<PackingDataMeta | null>(null);
 
   // Hook para gestionar PWNID
   const {
@@ -57,6 +60,14 @@ const PackingListProcess: React.FC = () => {
     if (timerRef.current) {
       window.clearInterval(timerRef.current);
       timerRef.current = null;
+    }
+
+    // NUEVO: Extraer stats si existen
+    if (results.stats && results.sheetsAnalysis && results._meta) {
+      console.log('📊 Stats detectados en resultados');
+      setPackingStats(results.stats);
+      setSheetsAnalysis(results.sheetsAnalysis);
+      setMetaData(results._meta);
     }
 
     // Generar ID de sesión único
@@ -255,49 +266,23 @@ const PackingListProcess: React.FC = () => {
           />
 
           {/* 2. Resultados - Segundo */}
-          <Card className="bg-niawi-surface border-niawi-border">
-            <CardHeader>
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <CardTitle className="text-foreground">Resultados</CardTitle>
-                  <CardDescription className="text-muted-foreground">
-                    {currentResults.recordCount || currentResults.data.length} registros procesados
-                  </CardDescription>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-niawi-accent text-white">
-                    <CheckCircle className="w-3 h-3 mr-1" /> Completado
-                  </Badge>
-                  <span className="font-mono text-lg text-niawi-accent">
-                    {Math.floor(elapsedMs / 60000).toString().padStart(2, '0')}:
-                    {Math.floor((elapsedMs % 60000) / 1000).toString().padStart(2, '0')}
-                  </span>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <PackingListResultsTable
-                data={transformedData}
-                defaultPageSize={10}
-                pageSizeOptions={[10, 25, 50]}
-              />
-              {currentResults.fileUrl && (
-                <div className="flex items-center justify-center">
-                  <Button
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = currentResults.fileUrl!;
-                      link.download = 'PACKING_LIST_procesado.xlsx';
-                      link.click();
-                    }}
-                    className="bg-niawi-accent hover:bg-niawi-accent/90"
-                  >
-                    <Download className="w-4 h-4 mr-2" /> Descargar archivo procesado
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {packingStats && sheetsAnalysis && metaData ? (
+            <PackingListStats
+              stats={packingStats}
+              sheetsAnalysis={sheetsAnalysis}
+              meta={metaData}
+            />
+          ) : (
+            <Card className="bg-niawi-surface border-niawi-border">
+              <CardContent className="py-8 text-center text-muted-foreground">
+                No hay estadísticas disponibles para este archivo.
+                <br />
+                <span className="text-sm mt-2 inline-block">
+                  Excel y PWNID funcionan normalmente.
+                </span>
+              </CardContent>
+            </Card>
+          )}
 
           {/* 3. Sección de re-upload de Excel - Tercero */}
           <Card className="bg-niawi-surface border-niawi-border">
