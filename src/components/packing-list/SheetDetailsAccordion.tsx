@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Accordion,
@@ -15,12 +15,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle2, XCircle, Info, AlertCircle } from 'lucide-react';
-import { SheetsAnalysis, SheetDetail } from '@/types/automations';
+import { Button } from '@/components/ui/button';
+import { CheckCircle2, XCircle, Info, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { SheetsAnalysis, SheetDetail, PackingListStats } from '@/types/automations';
 
 interface SheetDetailsAccordionProps {
   sheetsAnalysis: SheetsAnalysis;
+  stats: PackingListStats;
 }
+
+const ITEMS_PER_PAGE = 20;
 
 const StatusBadge: React.FC<{ status: SheetDetail['status'] }> = ({ status }) => {
   const configs = {
@@ -61,24 +65,54 @@ const StatusBadge: React.FC<{ status: SheetDetail['status'] }> = ({ status }) =>
   );
 };
 
-const formatSizeTotals = (sizeTotals: Record<string, number>): string => {
-  if (Object.keys(sizeTotals).length === 0) {
-    return '—';
-  }
-
-  return Object.entries(sizeTotals)
-    .map(([size, qty]) => `${size}:${qty}`)
-    .join(', ');
-};
-
 export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
   sheetsAnalysis,
+  stats,
 }) => {
-  // Determinar si debe auto-expandirse
-  const shouldAutoExpand =
-    sheetsAnalysis.hasProblematicSheets ||
-    !sheetsAnalysis.allSheetsProcessed ||
-    sheetsAnalysis.errorSheets > 0;
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Extraer todas las tallas únicas y ordenarlas
+  const uniqueSizes = useMemo(() => {
+    const allSizes = new Set<string>();
+    sheetsAnalysis.sheetDetails.forEach(sheet => {
+      if (sheet.extractedData.sizeTotals) {
+        Object.keys(sheet.extractedData.sizeTotals).forEach(size => allSizes.add(size));
+      }
+    });
+
+    // Orden lógico de tallas
+    const sizeOrder = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '1X', '2X', '3X', '4X', '5X'];
+    
+    return Array.from(allSizes).sort((a, b) => {
+      const indexA = sizeOrder.indexOf(a);
+      const indexB = sizeOrder.indexOf(b);
+
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+
+      return a.localeCompare(b);
+    });
+  }, [sheetsAnalysis.sheetDetails]);
+
+  // Paginación
+  const totalPages = Math.ceil(sheetsAnalysis.sheetDetails.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentSheets = sheetsAnalysis.sheetDetails.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const handlePreviousPage = () => {
+    setCurrentPage(prev => Math.max(1, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages, prev + 1));
+  };
+
+  // Contar tallas totales (del global stats)
+  const totalSizesCount = Object.keys(stats.sizeTotals).length;
 
   return (
     <Card>
@@ -86,7 +120,7 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
         <Accordion
           type="single"
           collapsible
-          defaultValue={shouldAutoExpand ? 'sheet-details' : undefined}
+          defaultValue="sheet-details"
         >
           <AccordionItem value="sheet-details" className="border-0">
             <AccordionTrigger className="px-6 hover:no-underline">
@@ -100,20 +134,25 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
               </div>
             </AccordionTrigger>
             <AccordionContent className="px-6 pb-6">
-              {/* Vista Desktop: Tabla */}
+              {/* Vista Desktop: Tabla Consolidada */}
               <div className="hidden md:block overflow-x-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-[40%]">Nombre de Hoja</TableHead>
-                      <TableHead className="w-[15%]">Estado</TableHead>
-                      <TableHead className="w-[10%] text-right">Unidades</TableHead>
-                      <TableHead className="w-[10%] text-right">Cartones</TableHead>
-                      <TableHead className="w-[25%]">Tallas</TableHead>
+                      <TableHead className="w-[30%] min-w-[250px]">Hoja</TableHead>
+                      <TableHead className="w-[12%] min-w-[100px]">Estado</TableHead>
+                      <TableHead className="w-[10%] min-w-[90px] text-right">Unidades</TableHead>
+                      <TableHead className="w-[10%] min-w-[90px] text-right">Cartones</TableHead>
+                      {uniqueSizes.map(size => (
+                        <TableHead key={size} className="text-right min-w-[70px] font-bold">
+                          {size}
+                        </TableHead>
+                      ))}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sheetsAnalysis.sheetDetails.map((sheet, index) => {
+                    {/* Filas de hojas (paginadas) */}
+                    {currentSheets.map((sheet, index) => {
                       const isProblematic =
                         sheet.status === 'error' ||
                         sheet.errors.length > 0 ||
@@ -143,21 +182,46 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
                               ? sheet.extractedData.cartonsCount.toLocaleString()
                               : '—'}
                           </TableCell>
-                          <TableCell className="font-mono text-xs">
-                            {sheet.type === 'packing_data'
-                              ? formatSizeTotals(sheet.extractedData.sizeTotals)
-                              : <span className="text-muted-foreground italic">[{sheet.type}]</span>}
-                          </TableCell>
+                          {uniqueSizes.map(size => {
+                            const qty = sheet.extractedData.sizeTotals?.[size];
+                            return (
+                              <TableCell key={size} className="text-right font-mono text-sm">
+                                {qty !== undefined && qty > 0 ? qty.toLocaleString() : '—'}
+                              </TableCell>
+                            );
+                          })}
                         </TableRow>
                       );
                     })}
+
+                    {/* Fila de TOTALES */}
+                    <TableRow className="bg-muted/50 font-bold border-t-2 border-primary">
+                      <TableCell className="text-base">TOTAL</TableCell>
+                      <TableCell></TableCell>
+                      <TableCell className="text-right text-base">
+                        {stats.grandTotalUnits.toLocaleString()}
+                      </TableCell>
+                      <TableCell className="text-right text-base">
+                        {stats.totalCartonsQty.toLocaleString()}
+                      </TableCell>
+                      {uniqueSizes.map(size => (
+                        <TableCell key={size} className="text-right text-base">
+                          {stats.sizeTotals[size]?.toLocaleString() || '—'}
+                        </TableCell>
+                      ))}
+                    </TableRow>
                   </TableBody>
                 </Table>
+
+                {/* Resumen de totales debajo de la tabla */}
+                <div className="mt-4 pt-4 border-t text-center text-sm text-muted-foreground">
+                  Total: {stats.grandTotalUnits.toLocaleString()} unidades en {totalSizesCount} talla{totalSizesCount !== 1 ? 's' : ''}
+                </div>
               </div>
 
               {/* Vista Mobile: Cards */}
               <div className="md:hidden space-y-3">
-                {sheetsAnalysis.sheetDetails.map((sheet, index) => {
+                {currentSheets.map((sheet, index) => {
                   const isProblematic =
                     sheet.status === 'error' ||
                     sheet.errors.length > 0 ||
@@ -181,7 +245,7 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
                         <StatusBadge status={sheet.status} />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-sm">
+                      <div className="grid grid-cols-2 gap-2 text-sm mb-3">
                         <div>
                           <span className="text-muted-foreground text-xs">Unidades:</span>
                           <p className="font-semibold">
@@ -202,10 +266,21 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
 
                       {sheet.type === 'packing_data' && (
                         <div className="mt-3 pt-3 border-t">
-                          <span className="text-muted-foreground text-xs block mb-1">Tallas:</span>
-                          <p className="font-mono text-xs">
-                            {formatSizeTotals(sheet.extractedData.sizeTotals)}
-                          </p>
+                          <span className="text-muted-foreground text-xs block mb-2">Tallas:</span>
+                          <div className="grid grid-cols-3 gap-2 text-sm">
+                            {uniqueSizes.map(size => {
+                              const qty = sheet.extractedData.sizeTotals?.[size];
+                              if (qty !== undefined && qty > 0) {
+                                return (
+                                  <div key={size} className="flex justify-between">
+                                    <span className="font-medium">{size}:</span>
+                                    <span className="font-mono">{qty}</span>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            })}
+                          </div>
                         </div>
                       )}
 
@@ -217,13 +292,75 @@ export const SheetDetailsAccordion: React.FC<SheetDetailsAccordionProps> = ({
                     </div>
                   );
                 })}
+
+                {/* Totales en mobile */}
+                <div className="p-4 rounded-lg border-2 border-primary bg-muted/50 font-semibold">
+                  <p className="text-sm mb-3 text-center">TOTALES</p>
+                  <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                    <div>
+                      <span className="text-muted-foreground text-xs">Unidades:</span>
+                      <p className="font-bold text-base">{stats.grandTotalUnits.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground text-xs">Cartones:</span>
+                      <p className="font-bold text-base">{stats.totalCartonsQty.toLocaleString()}</p>
+                    </div>
+                  </div>
+                  <div className="pt-3 border-t">
+                    <span className="text-muted-foreground text-xs block mb-2">Por talla:</span>
+                    <div className="grid grid-cols-3 gap-2 text-sm">
+                      {uniqueSizes.map(size => {
+                        const qty = stats.sizeTotals[size];
+                        if (qty !== undefined && qty > 0) {
+                          return (
+                            <div key={size} className="flex justify-between">
+                              <span className="font-bold">{size}:</span>
+                              <span className="font-mono">{qty}</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
+
+              {/* Controles de Paginación */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Anterior
+                  </Button>
+                  <span className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                  >
+                    Siguiente
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+              )}
 
               {/* Mostrar errores/warnings si existen */}
               {sheetsAnalysis.sheetDetails.some(
                 (s) => s.errors.length > 0 || s.warnings.length > 0
               ) && (
-                <div className="mt-4 space-y-2">
+                <div className="mt-6 space-y-2">
+                  <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mb-2">
+                    Alertas detectadas:
+                  </p>
                   {sheetsAnalysis.sheetDetails
                     .filter((s) => s.errors.length > 0 || s.warnings.length > 0)
                     .map((sheet, index) => (

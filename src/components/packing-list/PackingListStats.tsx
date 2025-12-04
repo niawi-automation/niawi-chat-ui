@@ -2,7 +2,6 @@ import React from 'react';
 import { PackingListStats as PackingListStatsType, SheetsAnalysis, PackingDataMeta } from '@/types/automations';
 import { ProcessingStatusAlert } from './ProcessingStatusAlert';
 import { StatsOverview } from './StatsOverview';
-import { SizeTotalsDisplay } from './SizeTotalsDisplay';
 import { SheetDetailsAccordion } from './SheetDetailsAccordion';
 
 interface PackingListStatsProps {
@@ -24,11 +23,8 @@ export const PackingListStats: React.FC<PackingListStatsProps> = ({
       {/* Resumen Global */}
       <StatsOverview stats={stats} sheetsAnalysis={sheetsAnalysis} />
 
-      {/* Distribución por Talla */}
-      <SizeTotalsDisplay stats={stats} />
-
-      {/* Detalle por Hoja */}
-      <SheetDetailsAccordion sheetsAnalysis={sheetsAnalysis} />
+      {/* Detalle por Hoja (incluye totales) */}
+      <SheetDetailsAccordion sheetsAnalysis={sheetsAnalysis} stats={stats} />
 
       {/* Metadata Footer (opcional - para debugging) */}
       {process.env.NODE_ENV === 'development' && (
